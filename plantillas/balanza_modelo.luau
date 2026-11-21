@@ -140,7 +140,7 @@ for _, lado in { { "Izq", -1 }, { "Der", 1 } } do
 		Name = "Cuerda" .. lado[1],
 		Size = Vector3.new(0.25, 6.5, 0.25),
 		CFrame = en(x, 14.75, 0),
-		Color = Color3.fromRGB(90, 70, 50),
+		Color = Color3.fromRGB(20, 20, 24),
 		Material = Enum.Material.Fabric,
 		CanCollide = false,
 	})
