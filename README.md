@@ -94,8 +94,7 @@ pruebas/todo.sh     # pruebas (Lune) + lint (selene) + tipos (luau-lsp). En Wind
 - Textos en español de Costa Rica, con voseo («tocá», «probá»).
 - Nada de datos de niños, docentes ni claves en este repo: es público.
 
-## Git en equipo
+## Git
 
-- Una rama por juego: `git switch -c balanza`. Subí seguido (`git push -u origin balanza`) y abrí un Pull Request.
-- Cada quien toca su `Logica/<Juego>`, `Juegos/<Juego>` y `pruebas/<juego>`. Los archivos comunes
-  (`init.client.luau`, `Modulos.luau`, `Estilo.luau`, `Interfaz.luau`) cambian poco: avisá en el grupo antes.
+Solo para lo que se hace con Rojo (`src/`, `plantillas/`). Lo que el equipo hace en Studio queda guardado en el
+mundo compartido; si un juego de Studio se quiere guardar acá, se copia a `src/client/Juegos/`.
