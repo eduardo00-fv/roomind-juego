@@ -211,6 +211,15 @@ textoLobby.TextStrokeTransparency = 0.2
 textoLobby.Parent = cartelLobby
 cartelLobby.Parent = alLobby
 
+local IDS = {
+	Ambiente = "rbxassetid://9125615158",
+	Tanteo = "rbxassetid://9119604982",
+	Piso = "rbxassetid://9126076030",
+	Lava = "rbxassetid://9119165650",
+	Quemada = "rbxassetid://9114446277",
+	Ganar = "rbxassetid://1836473422",
+	Estrella = "rbxassetid://9126073001",
+}
 -- Sonidos: el juego toca el que tenga SoundId. Elegilos en el Toolbox (Audio) y pegá el id en SoundId.
 local sonidos = Instance.new("Folder")
 sonidos.Name = "Sonidos"
@@ -228,7 +237,7 @@ for _, s in
 do
 	local snd = Instance.new("Sound")
 	snd.Name = s[1]
-	snd.SoundId = ""
+	snd.SoundId = IDS[s[1]] or ""
 	snd.Volume = if s[1] == "Ambiente" then 0.25 else 0.6
 	snd.Looped = s[1] == "Ambiente"
 	snd:SetAttribute("Que", s[2])

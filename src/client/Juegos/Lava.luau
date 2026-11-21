@@ -30,7 +30,6 @@ local Juego = {}
 -- las baldosas se arman encima de su parte «Origen» y crecen hacia -Z. Sin modelo, se usa este punto y un mar simple.
 local ORIGEN = Vector3.new(600, 40, 0)
 local escenario: Instance? = nil
-local sonidos: Instance? = nil
 local T = 10 -- lado de una baldosa
 local COLOR = Estilo.color.lava
 
@@ -39,10 +38,41 @@ local function rnd(a: number, b: number): number
 	return azar:NextInteger(a, b)
 end
 
--- Toca un sonido de la carpeta Sonidos del modelo (si tiene SoundId).
-local function sonar(nombre: string)
+-- Sonidos: los del modelo (carpeta Sonidos) y, si están vacíos, estos de respaldo (bibliotecas con licencia de
+-- Roblox: ProSoundEffects y APMOfficial, se pueden usar en cualquier juego).
+local RESPALDO: { [string]: string } = {
+	Ambiente = "rbxassetid://9125615158",
+	Tanteo = "rbxassetid://9119604982",
+	Piso = "rbxassetid://9126076030",
+	Lava = "rbxassetid://9119165650",
+	Quemada = "rbxassetid://9114446277",
+	Ganar = "rbxassetid://1836473422",
+	Estrella = "rbxassetid://9126073001",
+}
+local sonidos: Instance? = nil
+local cache: { [string]: Sound } = {}
+local function sonido(nombre: string): Sound?
 	local s = sonidos and sonidos:FindFirstChild(nombre)
 	if s and s:IsA("Sound") and s.SoundId ~= "" then
+		return s
+	end
+	local id = RESPALDO[nombre]
+	if not id then
+		return nil
+	end
+	if not cache[nombre] then
+		local n = Instance.new("Sound")
+		n.Name = "Lava_" .. nombre
+		n.SoundId = id
+		n.Volume = if nombre == "Ambiente" then 0.2 else 0.6
+		n.Parent = SoundService
+		cache[nombre] = n
+	end
+	return cache[nombre]
+end
+local function sonar(nombre: string)
+	local s = sonido(nombre)
+	if s then
 		SoundService:PlayLocalSound(s)
 	end
 end
@@ -557,8 +587,8 @@ function Juego.jugar(ctx: Contexto): boolean
 	carpeta.Parent = workspace
 
 	local ambiente: Sound? = nil
-	local base = sonidos and sonidos:FindFirstChild("Ambiente")
-	if base and base:IsA("Sound") and base.SoundId ~= "" then
+	local base = sonido("Ambiente")
+	if base then
 		local a = base:Clone()
 		a.Looped = true
 		a.Parent = carpeta

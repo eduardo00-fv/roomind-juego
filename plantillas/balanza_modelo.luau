@@ -22,6 +22,7 @@ local AZUL = Color3.fromRGB(27, 108, 168)
 local ORO = Color3.fromRGB(201, 162, 39)
 local ROJO = Color3.fromRGB(215, 38, 61)
 local CREMA = Color3.fromRGB(240, 228, 200)
+local HIERRO = Color3.fromRGB(38, 44, 62) -- la balanza: oscura para que contraste con la pared amarilla
 
 local modelo = Instance.new("Model")
 modelo.Name = "Balanza"
@@ -100,14 +101,14 @@ parte({
 	Name = "Pedestal",
 	Size = Vector3.new(7, 1, 5),
 	CFrame = en(0, 5.5, 0),
-	Color = ORO,
+	Color = HIERRO,
 	Material = Enum.Material.Metal,
 })
 parte({
 	Name = "Poste",
 	Size = Vector3.new(1.4, 12, 1.4),
 	CFrame = en(0, 12, 0),
-	Color = ORO,
+	Color = HIERRO,
 	Material = Enum.Material.Metal,
 })
 parte({
@@ -123,14 +124,14 @@ parte({
 	Shape = Enum.PartType.Ball,
 	Size = Vector3.new(2.4, 2.4, 2.4),
 	CFrame = en(0, 18.6, 0),
-	Color = ORO,
+	Color = HIERRO,
 	Material = Enum.Material.Metal,
 })
 parte({
 	Name = "Viga",
 	Size = Vector3.new(27, 0.9, 0.9),
 	CFrame = en(0, 18, 0),
-	Color = ORO,
+	Color = HIERRO,
 	Material = Enum.Material.Metal,
 })
 for _, lado in { { "Izq", -1 }, { "Der", 1 } } do
@@ -332,6 +333,15 @@ textoLobby.TextStrokeTransparency = 0.2
 textoLobby.Parent = cartelLobby
 cartelLobby.Parent = alLobby
 
+local IDS = {
+	Ambiente = "rbxassetid://1845909886",
+	Poner = "rbxassetid://9120917813",
+	Inclina = "rbxassetid://9120839010",
+	Pareja = "rbxassetid://9116395085",
+	Bien = "rbxassetid://9126073318",
+	Mal = "rbxassetid://9112752910",
+	Estrella = "rbxassetid://9126073001",
+}
 -- Sonidos: el juego toca el que tenga SoundId (elegilos en el Toolbox, pestaña Audio).
 local sonidos = Instance.new("Folder")
 sonidos.Name = "Sonidos"
@@ -349,7 +359,7 @@ for _, s in
 do
 	local snd = Instance.new("Sound")
 	snd.Name = s[1]
-	snd.SoundId = ""
+	snd.SoundId = IDS[s[1]] or ""
 	snd.Volume = if s[1] == "Ambiente" then 0.2 else 0.6
 	snd.Looped = s[1] == "Ambiente"
 	snd:SetAttribute("Que", s[2])

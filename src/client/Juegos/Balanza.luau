@@ -33,7 +33,7 @@ local CAJA = 3 -- tamaño de una caja misteriosa
 local GRADOS_POR_KILO = 2.5
 local MAX_GRADOS = 14
 local COLORES_PESO = {
-	[1] = Color3.fromRGB(242, 183, 5),
+	[1] = Color3.fromRGB(250, 250, 250), -- blanco: el amarillo se perdía contra la pared
 	[2] = Color3.fromRGB(46, 158, 79),
 	[3] = Color3.fromRGB(27, 108, 168),
 	[4] = Color3.fromRGB(140, 80, 170),
@@ -45,10 +45,41 @@ local function rnd(a: number, b: number): number
 	return azar:NextInteger(a, b)
 end
 
+-- Sonidos: los del modelo (carpeta Sonidos) y, si están vacíos, estos de respaldo (bibliotecas con licencia de
+-- Roblox: ProSoundEffects y APMOfficial, se pueden usar en cualquier juego).
+local RESPALDO: { [string]: string } = {
+	Ambiente = "rbxassetid://1845909886",
+	Poner = "rbxassetid://9120917813",
+	Inclina = "rbxassetid://9120839010",
+	Pareja = "rbxassetid://9116395085",
+	Bien = "rbxassetid://9126073318",
+	Mal = "rbxassetid://9112752910",
+	Estrella = "rbxassetid://9126073001",
+}
 local sonidos: Instance? = nil
-local function sonar(nombre: string)
+local cache: { [string]: Sound } = {}
+local function sonido(nombre: string): Sound?
 	local s = sonidos and sonidos:FindFirstChild(nombre)
 	if s and s:IsA("Sound") and s.SoundId ~= "" then
+		return s
+	end
+	local id = RESPALDO[nombre]
+	if not id then
+		return nil
+	end
+	if not cache[nombre] then
+		local n = Instance.new("Sound")
+		n.Name = "Balanza_" .. nombre
+		n.SoundId = id
+		n.Volume = if nombre == "Ambiente" then 0.2 else 0.6
+		n.Parent = SoundService
+		cache[nombre] = n
+	end
+	return cache[nombre]
+end
+local function sonar(nombre: string)
+	local s = sonido(nombre)
+	if s then
 		SoundService:PlayLocalSound(s)
 	end
 end
@@ -181,6 +212,29 @@ function Juego.jugar(ctx: Contexto): boolean
 	end
 	local E = e :: Escena
 	sonidos = E.modelo:FindFirstChild("Sonidos")
+	-- Contraste: la balanza dorada se perdía contra la pared amarilla. Si sigue con el dorado original, se pinta
+	-- de hierro oscuro (solo en este jugador); además un contorno blanco para que se lea sobre cualquier fondo.
+	local ORO = Color3.fromRGB(201, 162, 39)
+	local HIERRO = Color3.fromRGB(38, 44, 62)
+	local contornos: { Highlight } = {}
+	for _, nombre in { "Viga", "Poste", "Corona", "Pedestal", "CuerdaIzq", "CuerdaDer", "PlatoIzq", "PlatoDer" } do
+		local x = E.modelo:FindFirstChild(nombre)
+		if x and x:IsA("BasePart") then
+			local c = x.Color
+			if math.abs(c.R - ORO.R) + math.abs(c.G - ORO.G) + math.abs(c.B - ORO.B) < 0.08 then
+				x.Color = HIERRO
+			end
+			local h = Instance.new("Highlight")
+			h.Adornee = x
+			h.FillTransparency = 1
+			h.OutlineColor = Color3.new(1, 1, 1)
+			h.OutlineTransparency = 0.1
+			h.DepthMode = Enum.HighlightDepthMode.Occluded
+			h.Parent = x
+			table.insert(contornos, h)
+		end
+	end
+
 	-- Con StreamingEnabled: que cargue el piso de la pulpería antes de llevar al jugador.
 	pcall(function()
 		Players.LocalPlayer:RequestStreamAroundAsync(E.pivote.Position, 5)
@@ -209,8 +263,8 @@ function Juego.jugar(ctx: Contexto): boolean
 	end
 
 	local ambiente: Sound? = nil
-	local base = sonidos and sonidos:FindFirstChild("Ambiente")
-	if base and base:IsA("Sound") and base.SoundId ~= "" then
+	local base = sonido("Ambiente")
+	if base then
 		local a = base:Clone()
 		a.Looped = true
 		a.Parent = carpeta
@@ -289,7 +343,7 @@ function Juego.jugar(ctx: Contexto): boolean
 				p.Size = Vector3.new(LADO_BLOQUE, LADO_BLOQUE, LADO_BLOQUE)
 				p.Color = COLORES_PESO[b.peso] or Estilo.color.secundario
 				p.Material = Enum.Material.SmoothPlastic
-				rotular(p, tostring(b.peso), Color3.new(1, 1, 1))
+				rotular(p, tostring(b.peso), if b.peso == 1 then Estilo.color.texto else Color3.new(1, 1, 1))
 			end
 			p:SetAttribute("id", b.id)
 			p.Name = "Bloque" .. b.id
@@ -684,6 +738,9 @@ function Juego.jugar(ctx: Contexto): boolean
 	tocado:Destroy()
 	for p, cf in E.originales do
 		p.CFrame = cf
+	end
+	for _, h in contornos do
+		h:Destroy()
 	end
 	barra.quitar()
 	if ambiente then
