@@ -7,7 +7,7 @@ lleva a un minijuego. El diseño de cada uno (reglas, niveles, pistas, base en l
 | Juego | Id | Estado |
 |---|---|---|
 | El Mandadero | `mandadero` | por hacer |
-| La Balanza | `balanza` | por hacer |
+| La Balanza | `balanza` | **jugable** (modelo `entregas/Balanza.rbxm`) |
 | ¿Qué se esconde? | `escondido` | por hacer |
 | El Colado | `colado` | por hacer |
 | ¡El suelo es lava! | `lava` | **listo** (usalo de ejemplo) |
@@ -69,7 +69,7 @@ y `Probar` (alfombra que arranca el juego):
 | Juego | Módulo | Zona (centro) |
 |---|---|---|
 | El Mandadero | `Juegos.Mandadero` | (-600, 0, 0) |
-| La Balanza | `Juegos.Balanza` | (0, 0, -600) |
+| La Balanza | `src/client/Juegos/Balanza.luau` (Rojo) | modelo `Balanza` (pulpería), Origen en (0, 40, -800) |
 | ¿Qué se esconde? | `Juegos.Escondido` | (0, 0, 600) |
 | El Colado | `Juegos.Colado` | (-600, 0, 600) |
 | El Mensajero | `Juegos.Mensajero` | (-600, 0, -600) |

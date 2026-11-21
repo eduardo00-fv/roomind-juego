@@ -127,15 +127,12 @@ local function construir(n: number, padre: Instance): Tablero
 		end
 	end
 	-- Fondo oscuro entre las juntas y el mar de lava abajo.
-	parte(
-		{
-			Name = "Junta",
-			Size = Vector3.new(ancho, 1, largo),
-			Position = Vector3.new(ORIGEN.X, ORIGEN.Y - 2.6, cz),
-			Color = Color3.fromRGB(45, 35, 30),
-		},
-		m
-	)
+	parte({
+		Name = "Junta",
+		Size = Vector3.new(ancho, 1, largo),
+		Position = Vector3.new(ORIGEN.X, ORIGEN.Y - 2.6, cz),
+		Color = Color3.fromRGB(45, 35, 30),
+	}, m)
 	if not escenario then
 		parte({
 			Name = "MarDeLava",
@@ -174,15 +171,12 @@ local function construir(n: number, padre: Instance): Tablero
 		}, m)
 	end
 	for _, z in { ORIGEN.Z + 2 * T + 0.5, ORIGEN.Z - largo - 2 * T - 0.5 } do
-		parte(
-			{
-				Name = "Pared",
-				Size = Vector3.new(ancho, 14, 1),
-				Position = Vector3.new(ORIGEN.X, ORIGEN.Y + 6, z),
-				Transparency = 1,
-			},
-			m
-		)
+		parte({
+			Name = "Pared",
+			Size = Vector3.new(ancho, 14, 1),
+			Position = Vector3.new(ORIGEN.X, ORIGEN.Y + 6, z),
+			Transparency = 1,
+		}, m)
 	end
 	m.Parent = padre
 	local pie = Vector3.new(ORIGEN.X, ORIGEN.Y + 3, ORIGEN.Z + T)

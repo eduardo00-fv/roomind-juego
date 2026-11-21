@@ -214,7 +214,13 @@ function Interfaz.preguntar(titulo: string, opciones: { string }, color: Color3?
 end
 
 -- Resultado de un reto: estrellas (0 = sin estrellas) + una línea + botones. Devuelve el número del botón.
-function Interfaz.resultado(titulo: string, estrellas: number, detalle: string, botones: { string }, color: Color3?): number
+function Interfaz.resultado(
+	titulo: string,
+	estrellas: number,
+	detalle: string,
+	botones: { string },
+	color: Color3?
+): number
 	local s = ""
 	if estrellas > 0 then
 		s = string.rep("★", estrellas) .. string.rep("☆", 3 - estrellas) .. "\n"

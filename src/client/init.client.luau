@@ -29,18 +29,26 @@ local function cargar(m: Instance, origen: string)
 	if ok and type(juego) == "table" and type(juego.jugar) == "function" then
 		Juegos[id] = juego
 	else
-		warn(("[Juegos] %s.%s no cargó: %s"):format(origen, m.Name, if ok then "no exporta jugar(ctx)" else tostring(juego)))
+		warn(
+			("[Juegos] %s.%s no cargó: %s"):format(
+				origen,
+				m.Name,
+				if ok then "no exporta jugar(ctx)" else tostring(juego)
+			)
+		)
 	end
 end
 
-for _, m in script.Juegos:GetChildren() do
-	cargar(m, "Client.Juegos")
-end
+-- Primero los del equipo y después los de Rojo: si hay dos con el mismo nombre, gana el de Rojo
+-- (así una plantilla vacía en ReplicatedStorage no tapa un juego terminado).
 local equipo = ReplicatedStorage:FindFirstChild("Juegos")
 if equipo then
 	for _, m in equipo:GetChildren() do
 		cargar(m, "ReplicatedStorage.Juegos")
 	end
+end
+for _, m in script.Juegos:GetChildren() do
+	cargar(m, "Client.Juegos")
 end
 
 local partida = ReplicatedStorage:WaitForChild("Partida") :: RemoteEvent

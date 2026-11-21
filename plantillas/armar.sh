@@ -11,7 +11,8 @@ for p in shared server client; do
 done
 ( cd plantillas && rojo build juegos.project.json -o ../entregas/Juegos.rbxm && rojo build zonas.project.json -o ../entregas/Zonas.rbxm )
 lune run plantillas/lava_modelo.luau
+lune run plantillas/balanza_modelo.luau
 ls entregas
 # Studio (Vinegar, Flatpak) solo ve Documentos e Imágenes: copia ahí lo que se inserta a mano.
 d="$(xdg-user-dir DOCUMENTS 2>/dev/null || echo "$HOME/Documents")/RooMind"
-mkdir -p "$d" && cp entregas/{Lava,Zonas,Juegos}.rbxm "$d/" && echo "copiado a $d"
+mkdir -p "$d" && cp entregas/{Lava,Balanza,Zonas,Juegos}.rbxm "$d/" && echo "copiado a $d"

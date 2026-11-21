@@ -34,7 +34,8 @@ function Juego.jugar(ctx)
 
 	-- 🚧 Aquí va tu juego. Borrá esto y construí el tuyo.
 	local t0 = os.clock()
-	local k = I.preguntar("🚧 ¿Qué se esconde? en construcción. ¿Ya está listo?", { "Todavía no", "¡Sí!" }, color)
+	local k =
+		I.preguntar("🚧 ¿Qué se esconde? en construcción. ¿Ya está listo?", { "Todavía no", "¡Sí!" }, color)
 	ctx.reto({
 		reto = "escondido-prueba",
 		habilidad = "inductivo",

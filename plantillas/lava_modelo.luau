@@ -72,7 +72,8 @@ for k = 0, 6 do
 		parte({
 			Name = "Roca",
 			Size = Vector3.new(2 * math.pi * r / n + 1.5, alto, 11),
-			CFrame = CFrame.new(C + Vector3.new(math.sin(t) * r, abajo + alto / 2, math.cos(t) * r)) * CFrame.Angles(0, t, 0),
+			CFrame = CFrame.new(C + Vector3.new(math.sin(t) * r, abajo + alto / 2, math.cos(t) * r))
+				* CFrame.Angles(0, t, 0),
 			Color = ROCAS[(j + k) % 3 + 1],
 			Material = if k == 0 then Enum.Material.Basalt else Enum.Material.Rock,
 		}, crater)
@@ -188,15 +189,17 @@ cartel.Parent = mirador
 local sonidos = Instance.new("Folder")
 sonidos.Name = "Sonidos"
 sonidos.Parent = modelo
-for _, s in {
-	{ "Ambiente", "burbujeo de lava, en bucle, bajito" },
-	{ "Tanteo", "toc del palo en la piedra" },
-	{ "Piso", "acierto corto: la baldosa es piso" },
-	{ "Lava", "chisporroteo: encontró una lava con el palo" },
-	{ "Quemada", "¡fsss! se quemó" },
-	{ "Ganar", "fanfarria corta al llegar a la meta" },
-	{ "Estrella", "ding de cada estrella" },
-} do
+for _, s in
+	{
+		{ "Ambiente", "burbujeo de lava, en bucle, bajito" },
+		{ "Tanteo", "toc del palo en la piedra" },
+		{ "Piso", "acierto corto: la baldosa es piso" },
+		{ "Lava", "chisporroteo: encontró una lava con el palo" },
+		{ "Quemada", "¡fsss! se quemó" },
+		{ "Ganar", "fanfarria corta al llegar a la meta" },
+		{ "Estrella", "ding de cada estrella" },
+	}
+do
 	local snd = Instance.new("Sound")
 	snd.Name = s[1]
 	snd.SoundId = ""
