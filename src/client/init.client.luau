@@ -6,8 +6,9 @@
 --   * ReplicatedStorage.Juegos.<Nombre> (ModuleScripts hechos en Studio por el equipo; Rojo no toca esa carpeta).
 -- El nombre del módulo en minúscula es el id (Balanza -> balanza). Cada uno exporta jugar(ctx) -> completo.
 --
--- Portales: cualquier parte con la etiqueta «Portal» y el atributo «Modulo». Están en la plaza y, para probar
--- cada juego por aparte, en su zona (Workspace.Zonas.<Nombre>.Probar): Play Here al lado y pisarla.
+-- Portales: cualquier parte con la etiqueta «Portal» y el atributo «Modulo» (texto: el id del juego, ej. balanza).
+-- El lobby lo arma el equipo en Studio: para que una parte sea portal, en sus Properties agregar el Tag «Portal»
+-- y el atributo «Modulo». Cada zona de prueba trae su alfombra (Workspace.Zonas.<Nombre>.Probar).
 
 local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
@@ -99,17 +100,9 @@ local function entrar(id: string, alfombra: BasePart)
 		completo = false
 	end
 	partida:FireServer("terminar", completo == true)
-	local plaza = workspace:FindFirstChild("Plaza")
-	local enPlaza = plaza ~= nil and alfombra:IsDescendantOf(plaza)
-	Interfaz.telon(if enPlaza then "De vuelta a la plaza" else "De vuelta a la zona", function()
-		if enPlaza then
-			-- Unos pasos delante del portal y mirando al centro.
-			local p = alfombra.Position * Vector3.new(0.7, 0, 0.7) + Vector3.new(0, 4, 0)
-			llevar(CFrame.lookAt(p, Vector3.new(0, 4, 0)))
-		else
-			-- Alfombra de prueba en una zona: al lado, para volver a probar.
-			llevar(alfombra.CFrame + Vector3.new(12, 0, 0))
-		end
+	-- De vuelta al lado del portal por el que entró (en el lobby o en la zona de prueba).
+	Interfaz.telon("¡De vuelta!", function()
+		llevar(alfombra.CFrame + Vector3.new(0, 0, 12))
 	end)
 	task.wait(1)
 	enJuego = false

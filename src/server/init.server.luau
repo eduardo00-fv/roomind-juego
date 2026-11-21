@@ -1,14 +1,11 @@
 --!strict
--- Servidor: arma la plaza y recibe del cliente el avance de cada partida para mandarlo a la web de papás.
+-- Servidor: recibe del cliente el avance de cada partida para mandarlo a la web de papás.
 -- Los minijuegos corren en el cliente (src/client/Juegos); aquí solo se valida lo que llega.
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local Modulos = require(ReplicatedStorage.Shared.Modulos)
-local Plaza = require(script.Plaza)
 local Reporte = require(script.Reporte)
-
-Plaza.construir()
 
 local partida = Instance.new("RemoteEvent")
 partida.Name = "Partida"

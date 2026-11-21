@@ -1,6 +1,6 @@
 # RooMind — el juego (Roblox)
 
-Cinco minijuegos de razonamiento para niños de 8 a 10 años, en Roblox. Una plaza con portales: cada portal
+Cinco minijuegos de razonamiento para niños de 8 a 10 años, en Roblox. Un lobby con portales: cada portal
 lleva a un minijuego. El diseño de cada uno (reglas, niveles, pistas, base en la investigación) está en
 [`instrucciones.md`](instrucciones.md). **Leelo antes de programar tu juego.**
 
@@ -25,7 +25,6 @@ src/shared/Logica/<Juego>.luau regla pura de un juego, sin APIs de Roblox (se pr
 src/client/Juegos/<Juego>.luau juegos hechos con Rojo (hoy la Lava): exporta jugar(ctx) -> completo
 src/client/Interfaz.luau       mensajes, telón, preguntas, resultado
 src/client/init.client.luau    carga los juegos (de aquí y de ReplicatedStorage.Juegos) y conecta los portales
-src/server/Plaza.luau          arma la plaza si no está en el mundo
 src/server/Reporte.luau        manda cada partida a la web de papás
 plantillas/                    plantillas de juegos y zonas; plantillas/armar.sh genera entregas/*.rbxm
 ```
@@ -52,14 +51,17 @@ Todos están en el mismo mundo de Studio. **Rojo lo corre una sola persona** (la
 
 | Quién | Dónde trabaja | Cómo |
 |---|---|---|
-| Lobby | `Workspace.Plaza` (piezas) + `src/` (código, con Rojo) | Studio + editor |
+| Lobby | `Workspace` (piezas, a mano) | Solo Studio |
+| Código común | `src/` (con Rojo) | Editor |
 | Cada juego | `ReplicatedStorage.Juegos.<Nombre>` (su código) + `Workspace.Zonas.<Nombre>` (su mapa) | Solo Studio |
 
-**Una vez (lo hace la persona del lobby):**
-1. Con Rojo conectado, en la Command Bar de Studio (sin Play):
-   `require(game.ServerScriptService.Server.Plaza).construir()` → la plaza queda como piezas que se ven y se editan.
-2. Insert from File: `entregas/Juegos.rbxm` en ReplicatedStorage y `entregas/Zonas.rbxm` en Workspace
-   (se generan con `plantillas/armar.sh`).
+**Una vez:** Insert from File: `entregas/Juegos.rbxm` en ReplicatedStorage y `entregas/Zonas.rbxm` en Workspace
+(se generan con `plantillas/armar.sh`).
+
+**Portales en el lobby:** el lobby lo arma el equipo a mano (con su SpawnLocation). Para que una parte lleve a un
+juego: en Properties, **Tags → agregar `Portal`** y **Attributes → `Modulo`** (texto) con el id del juego
+(`mandadero`, `balanza`, `escondido`, `colado`, `lava`, `mensajero`). Al pisarla arranca el juego; al terminar,
+el jugador vuelve al lado del portal.
 
 **Cada juego tiene su zona** de 160×160, lejos de la plaza, con `Inicio` (donde aparece el jugador al entrar)
 y `Probar` (alfombra que arranca el juego):
