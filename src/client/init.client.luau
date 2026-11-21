@@ -79,6 +79,22 @@ local function zona(id: string): Instance?
 	return nil
 end
 
+-- El lobby: la parte con el tag «LobbyDestino» o, si no hay, el SpawnLocation del lobby
+-- (el primero que no esté dentro de Zonas).
+local function destinoLobby(): BasePart?
+	local marcado = CollectionService:GetTagged("LobbyDestino")[1]
+	if marcado and marcado:IsA("BasePart") then
+		return marcado
+	end
+	local zonas = workspace:FindFirstChild("Zonas")
+	for _, x in workspace:GetDescendants() do
+		if x:IsA("SpawnLocation") and not (zonas and x:IsDescendantOf(zonas)) then
+			return x
+		end
+	end
+	return nil
+end
+
 local function entrar(id: string, alfombra: BasePart)
 	if enJuego then
 		return
@@ -110,9 +126,24 @@ local function entrar(id: string, alfombra: BasePart)
 		completo = false
 	end
 	partida:FireServer("terminar", completo == true)
-	-- De vuelta al lado del portal por el que entró (en el lobby o en la zona de prueba).
-	Interfaz.telon("¡De vuelta!", function()
-		llevar(alfombra.CFrame + Vector3.new(0, 0, 12))
+	-- Si entró por un portal del lobby, vuelve a su lado. Si entró desde adentro del juego (la alfombra
+	-- «Probar» de su modelo o zona), va al lobby.
+	local adentro = false
+	local x: Instance? = alfombra.Parent
+	while x and x ~= workspace do
+		if string.lower(x.Name) == id or x.Name == "Zonas" then
+			adentro = true
+			break
+		end
+		x = x.Parent
+	end
+	local lobby = if adentro then destinoLobby() else nil
+	Interfaz.telon(if lobby then "De vuelta a la plaza" else "¡De vuelta!", function()
+		if lobby then
+			llevar(lobby)
+		else
+			llevar(alfombra.CFrame + Vector3.new(0, 0, 12))
+		end
 	end)
 	task.wait(1)
 	enJuego = false
@@ -139,22 +170,7 @@ for _, a in CollectionService:GetTagged("Portal") do
 end
 CollectionService:GetInstanceAddedSignal("Portal"):Connect(conectar)
 
--- Portales de vuelta al lobby: partes con el tag «Lobby». Llevan a la parte con el tag «LobbyDestino» o, si no
--- hay, al SpawnLocation del lobby (el primero que no esté dentro de un juego).
-local function destinoLobby(): BasePart?
-	local marcado = CollectionService:GetTagged("LobbyDestino")[1]
-	if marcado and marcado:IsA("BasePart") then
-		return marcado
-	end
-	local zonas = workspace:FindFirstChild("Zonas")
-	for _, x in workspace:GetDescendants() do
-		if x:IsA("SpawnLocation") and not (zonas and x:IsDescendantOf(zonas)) then
-			return x
-		end
-	end
-	return nil
-end
-
+-- Portales de vuelta al lobby: partes con el tag «Lobby» (destino: ver destinoLobby).
 local yendo = false
 local function conectarLobby(p: Instance)
 	if not p:IsA("BasePart") then
