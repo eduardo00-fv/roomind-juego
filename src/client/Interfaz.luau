@@ -213,6 +213,66 @@ function Interfaz.preguntar(titulo: string, opciones: { string }, color: Color3?
 	return i
 end
 
+-- Como preguntar, pero en una franja abajo y sin oscurecer: para preguntas donde hay que MIRAR la escena
+-- (¿hacia dónde se inclina?, ¿cuánto pesa?). Opciones en fila. Espera hasta que toque una; devuelve su número.
+function Interfaz.elegir(titulo: string, opciones: { string }, color: Color3?): number
+	local c = color or Estilo.color.deductivo
+	if mensajeActual then -- el panel ocupa el lugar del mensaje
+		mensajeActual:Destroy()
+		mensajeActual = nil
+	end
+	local panel = Instance.new("Frame")
+	panel.AnchorPoint = Vector2.new(0.5, 1)
+	panel.Position = UDim2.new(0.5, 0, 1, -12)
+	panel.Size = UDim2.new(0.94, 0, 0, 138)
+	panel.BackgroundColor3 = Estilo.color.tarjeta
+	panel.ZIndex = 6
+	esquinas(panel, 18)
+	borde(panel, c, 4)
+	local limite = Instance.new("UISizeConstraint")
+	limite.MaxSize = Vector2.new(980, math.huge)
+	limite.Parent = panel
+	panel.Parent = gui
+
+	local t = etiqueta(titulo)
+	t.Position = UDim2.fromOffset(14, 8)
+	t.Size = UDim2.new(1, -28, 0, 46)
+	t.ZIndex = 7
+	t.Parent = panel
+
+	local fila = Instance.new("Frame")
+	fila.BackgroundTransparency = 1
+	fila.Position = UDim2.fromOffset(14, 62)
+	fila.Size = UDim2.new(1, -28, 0, 62)
+	fila.ZIndex = 7
+	fila.Parent = panel
+	local lista = Instance.new("UIListLayout")
+	lista.FillDirection = Enum.FillDirection.Horizontal
+	lista.HorizontalAlignment = Enum.HorizontalAlignment.Center
+	lista.Padding = UDim.new(0, 12)
+	lista.Parent = fila
+
+	local elegido = Instance.new("BindableEvent")
+	local n = #opciones
+	for i, texto in opciones do
+		local b = Interfaz.boton(texto, c, fila)
+		b.Size = UDim2.new(1 / n, -12 * (n - 1) / n, 1, 0)
+		b.LayoutOrder = i
+		b.ZIndex = 8
+		b.Activated:Connect(function()
+			elegido:Fire(i)
+		end)
+	end
+	local escala = Instance.new("UIScale")
+	escala.Scale = 0.85
+	escala.Parent = panel
+	TweenService:Create(escala, TweenInfo.new(0.18, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	local i = elegido.Event:Wait()
+	panel:Destroy()
+	elegido:Destroy()
+	return i
+end
+
 -- Resultado de un reto: estrellas (0 = sin estrellas) + una línea + botones. Devuelve el número del botón.
 function Interfaz.resultado(
 	titulo: string,

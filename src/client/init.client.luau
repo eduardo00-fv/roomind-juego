@@ -6,6 +6,7 @@
 --   * ReplicatedStorage.Juegos.<Nombre> (ModuleScripts hechos en Studio por el equipo; Rojo no toca esa carpeta).
 -- El nombre del módulo en minúscula es el id (Balanza -> balanza). Cada uno exporta jugar(ctx) -> completo.
 --
+-- Vuelta al lobby: partes con la etiqueta «Lobby» (ver abajo).
 -- Portales: cualquier parte con la etiqueta «Portal» y el atributo «Modulo» (texto: el id del juego, ej. balanza).
 -- El lobby lo arma el equipo en Studio: para que una parte sea portal, en sus Properties agregar el Tag «Portal»
 -- y el atributo «Modulo». Cada zona de prueba trae su alfombra (Workspace.Zonas.<Nombre>.Probar).
@@ -137,3 +138,50 @@ for _, a in CollectionService:GetTagged("Portal") do
 	conectar(a)
 end
 CollectionService:GetInstanceAddedSignal("Portal"):Connect(conectar)
+
+-- Portales de vuelta al lobby: partes con el tag «Lobby». Llevan a la parte con el tag «LobbyDestino» o, si no
+-- hay, al SpawnLocation del lobby (el primero que no esté dentro de un juego).
+local function destinoLobby(): BasePart?
+	local marcado = CollectionService:GetTagged("LobbyDestino")[1]
+	if marcado and marcado:IsA("BasePart") then
+		return marcado
+	end
+	local zonas = workspace:FindFirstChild("Zonas")
+	for _, x in workspace:GetDescendants() do
+		if x:IsA("SpawnLocation") and not (zonas and x:IsDescendantOf(zonas)) then
+			return x
+		end
+	end
+	return nil
+end
+
+local yendo = false
+local function conectarLobby(p: Instance)
+	if not p:IsA("BasePart") then
+		return
+	end
+	p.Touched:Connect(function(otro)
+		local ch = jugador.Character
+		if yendo or enJuego or not (ch and otro:IsDescendantOf(ch)) then
+			return
+		end
+		local destino = destinoLobby()
+		if not destino then
+			Interfaz.mensaje(
+				"No encuentro el lobby: falta un SpawnLocation o una parte con el tag LobbyDestino.",
+				nil,
+				4
+			)
+			return
+		end
+		yendo = true
+		Interfaz.telon("Al lobby", function()
+			llevar(destino :: BasePart)
+		end)
+		yendo = false
+	end)
+end
+for _, p in CollectionService:GetTagged("Lobby") do
+	conectarLobby(p)
+end
+CollectionService:GetInstanceAddedSignal("Lobby"):Connect(conectarLobby)

@@ -7,7 +7,7 @@
 --     lo devuelve a la bandeja. En «Dame y quedamos iguales», tocar un bloque lo pasa al otro plato.
 --   * Antes de soltar, a veces se pregunta hacia dónde se va a inclinar (predecir obliga a pensar).
 --   * Con la balanza pareja, se pregunta cuánto pesa la caja.
--- La cámara queda fija mirando el mostrador; el jugador se queda quieto delante.
+-- La cámara queda fija mirando el mostrador; el jugador se queda quieto a un lado.
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -92,8 +92,6 @@ type Escena = {
 	platos: { [string]: BasePart },
 	cuerdas: { [string]: BasePart },
 	bandeja: BasePart,
-	camara: BasePart,
-	jugador: BasePart,
 	originales: { [BasePart]: CFrame },
 	-- Desplazamientos guardados respecto al pivote (para mover todo junto si mueven el modelo).
 	brazo: { [string]: Vector3 }, -- punta de la viga (x) y caída hasta el plato (y)
@@ -107,9 +105,9 @@ local function escena(m: Instance): Escena?
 		local x = m:FindFirstChild(nombre)
 		return if x and x:IsA("BasePart") then x else nil
 	end
-	local pivote, viga, bandeja, camara, jugador = p("Pivote"), p("Viga"), p("Bandeja"), p("Camara"), p("Jugador")
+	local pivote, viga, bandeja = p("Pivote"), p("Viga"), p("Bandeja")
 	local pi, pd, ci, cd = p("PlatoIzq"), p("PlatoDer"), p("CuerdaIzq"), p("CuerdaDer")
-	if not (pivote and viga and bandeja and camara and jugador and pi and pd and ci and cd) then
+	if not (pivote and viga and bandeja and pi and pd and ci and cd) then
 		return nil
 	end
 	local P = (pivote :: BasePart).CFrame
@@ -120,8 +118,6 @@ local function escena(m: Instance): Escena?
 		platos = { izq = pi :: BasePart, der = pd :: BasePart },
 		cuerdas = { izq = ci :: BasePart, der = cd :: BasePart },
 		bandeja = bandeja :: BasePart,
-		camara = camara :: BasePart,
-		jugador = jugador :: BasePart,
 		originales = {},
 		brazo = {},
 		rotPlato = {},
@@ -157,6 +153,13 @@ local function inclinar(e: Escena, angulo: number): { [string]: CFrame }
 	return donde
 end
 
+-- Encuadre fijo, relativo al pivote (si mueven el modelo, la cámara lo sigue). La balanza queda en la franja
+-- del medio: arriba va la barra del juego y abajo el panel de preguntas.
+local CAMARA = CFrame.lookAt(Vector3.new(0, -4, 50), Vector3.new(0, -6, 3))
+local FOV = 50
+-- El jugador mira desde un lado del mostrador, para no tapar la bandeja.
+local JUGADOR = CFrame.lookAt(Vector3.new(-24, -14.5, 16), Vector3.new(0, -14.5, 0))
+
 local function personaje(): (Model?, Humanoid?, BasePart?)
 	local ch = Players.LocalPlayer.Character
 	if not ch then
@@ -182,14 +185,16 @@ function Juego.jugar(ctx: Contexto): boolean
 	-- Cámara fija y jugador quieto delante del mostrador.
 	local cam = workspace.CurrentCamera
 	local camTipo = cam.CameraType
+	local camFov = cam.FieldOfView
 	local _, _, raiz = personaje()
 	Interfaz.telon("⚖️ La Balanza", function()
 		local ch = personaje()
 		if ch then
-			ch:PivotTo(E.jugador.CFrame + Vector3.new(0, 3, 0))
+			ch:PivotTo(E.pivote.CFrame * JUGADOR)
 		end
 		cam.CameraType = Enum.CameraType.Scriptable
-		cam.CFrame = E.camara.CFrame
+		cam.FieldOfView = FOV
+		cam.CFrame = E.pivote.CFrame * CAMARA
 	end)
 	if raiz then
 		raiz.Anchored = true
@@ -324,7 +329,7 @@ function Juego.jugar(ctx: Contexto): boolean
 				end
 			end
 		end
-		cam.CFrame = E.camara.CFrame
+		cam.CFrame = E.pivote.CFrame * CAMARA
 	end)
 
 	-- Toques: rayo desde la pantalla a los bloques, los platos o la bandeja.
@@ -370,7 +375,7 @@ function Juego.jugar(ctx: Contexto): boolean
 	local ayudaProxima = false
 
 	local function preguntarInclina(titulo: string): number
-		return Interfaz.preguntar(titulo, B.OPCIONES_INCLINA, COLOR)
+		return Interfaz.elegir(titulo, B.OPCIONES_INCLINA, COLOR)
 	end
 
 	local function textoLado(lado: string): string
@@ -401,7 +406,7 @@ function Juego.jugar(ctx: Contexto): boolean
 		end
 
 		if r.tipo == "predecir" then
-			barra.regla("Regla: baja el plato que pesa más")
+			Interfaz.mensaje("Regla: baja el plato que pesa más.", COLOR, 3)
 			task.wait(0.8)
 			while true do
 				intentos += 1
@@ -436,7 +441,6 @@ function Juego.jugar(ctx: Contexto): boolean
 		end
 
 		if r.tipo == "pasar" then
-			barra.regla("Regla: pasá bloques del plato pesado al liviano")
 			task.wait(0.8)
 			local ops = B.opcionesPasar(r, rnd)
 			local textos = {}
@@ -444,8 +448,8 @@ function Juego.jugar(ctx: Contexto): boolean
 				textos[i] = ("Pasar %d %s"):format(v, if v == 1 then "bloque" else "bloques")
 			end
 			local pesado = if B.diferencia(r) > 0 then "izq" else "der"
-			local k = Interfaz.preguntar(
-				("Todos los bloques pesan 1. ¿Cuántos tenés que pasar de %s al otro plato para que queden parejas?"):format(
+			local k = Interfaz.elegir(
+				("Cada bloque pesa 1. ¿Cuántos tenés que pasar de %s al otro plato para que queden parejas?"):format(
 					textoLado(pesado)
 				),
 				textos,
@@ -497,9 +501,12 @@ function Juego.jugar(ctx: Contexto): boolean
 		end
 
 		-- «caja»: emparejar con la bandeja y decir cuánto pesa.
-		barra.regla("Regla: si quedan parejas, los dos platos pesan lo mismo")
 		local predicciones = 0
-		Interfaz.mensaje("Tocá un bloque de abajo y después el plato donde lo querés poner.", COLOR, 5)
+		Interfaz.mensaje(
+			"Emparejá la balanza: tocá un bloque de abajo y después el plato donde lo querés poner.",
+			COLOR,
+			6
+		)
 		while not B.parejas(r) and not quiereSalir do
 			local x = tocado.Event:Wait()
 			local id = x:GetAttribute("id")
@@ -567,7 +574,7 @@ function Juego.jugar(ctx: Contexto): boolean
 		while true do
 			intentos += 1
 			local k =
-				Interfaz.preguntar(if una then "¿Cuánto pesa UNA caja?" else "¿Cuánto pesa la caja?", textos, COLOR)
+				Interfaz.elegir(if una then "¿Cuánto pesa UNA caja?" else "¿Cuánto pesa la caja?", textos, COLOR)
 			if ops[k] == w then
 				sonar("Bien")
 				Interfaz.mensaje(("¡Eso! La caja pesa %d."):format(w), Estilo.color.geometrico)
@@ -662,6 +669,7 @@ function Juego.jugar(ctx: Contexto): boolean
 		ambiente:Stop()
 	end
 	carpeta:Destroy()
+	cam.FieldOfView = camFov
 	cam.CameraType = if camTipo == Enum.CameraType.Scriptable then Enum.CameraType.Custom else camTipo
 	local _, _, rz = personaje()
 	if rz then

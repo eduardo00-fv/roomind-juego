@@ -185,6 +185,32 @@ texto.TextStrokeColor3 = Color3.fromRGB(120, 40, 10)
 texto.Parent = cartel
 cartel.Parent = mirador
 
+-- Portal de vuelta al lobby (tag «Lobby»).
+local alLobby = parte({
+	Name = "AlLobby",
+	Shape = Enum.PartType.Cylinder,
+	Size = Vector3.new(1, 10, 10),
+	CFrame = CFrame.new(C + Vector3.new(14, -37.4, 156)) * CFrame.Angles(0, 0, math.rad(90)),
+	Color = Color3.fromRGB(46, 158, 79),
+	Material = Enum.Material.Neon,
+	CanCollide = false,
+}, modelo)
+alLobby:AddTag("Lobby")
+local cartelLobby = Instance.new("BillboardGui")
+cartelLobby.Size = roblox.UDim2.fromOffset(220, 70)
+cartelLobby.StudsOffset = Vector3.new(0, 6, 0)
+cartelLobby.MaxDistance = 120
+local textoLobby = Instance.new("TextLabel")
+textoLobby.Size = roblox.UDim2.fromScale(1, 1)
+textoLobby.BackgroundTransparency = 1
+textoLobby.Text = "🏠 Al lobby"
+textoLobby.TextScaled = true
+textoLobby.FontFace = roblox.Font.fromEnum(Enum.Font.FredokaOne)
+textoLobby.TextColor3 = Color3.new(1, 1, 1)
+textoLobby.TextStrokeTransparency = 0.2
+textoLobby.Parent = cartelLobby
+cartelLobby.Parent = alLobby
+
 -- Sonidos: el juego toca el que tenga SoundId. Elegilos en el Toolbox (Audio) y pegá el id en SoundId.
 local sonidos = Instance.new("Folder")
 sonidos.Name = "Sonidos"

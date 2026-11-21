@@ -80,6 +80,9 @@ inserta en Workspace o en Workspace › Zonas, y se puede mover (no rotar). El c
 parte `Origen`. Para los sonidos: en el Toolbox (pestaña Audio) buscá uno, copiá su id y pegalo en el `SoundId` de
 cada Sound de `Lava › Sonidos` (el atributo `Que` dice qué sonido va ahí). Los que queden vacíos no suenan.
 
+**Vuelta al lobby:** una parte con el tag `Lobby` lleva al lobby al pisarla (los modelos de Lava y Balanza traen
+la alfombra verde «Al lobby»). El destino es la parte con el tag `LobbyDestino` o, si no hay, el SpawnLocation.
+
 **Probar solo tu juego:** en el Explorer seleccioná `Workspace > Zonas > <Tuyo>`, F (la cámara va ahí),
 pestaña **Test → Play Here**, y pisá la alfombra `Probar`. Al terminar volvés al lado de la alfombra.
 Cada plantilla explica arriba qué trae `ctx` (mensajes, preguntas, resultado, `ctx.reto(...)`); el ejemplo
