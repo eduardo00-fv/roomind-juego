@@ -337,6 +337,7 @@ function Juego.jugar(ctx: Contexto): boolean
 	-- Salir despierta al bucle que espera un toque.
 	barra.alSalir(function()
 		quiereSalir = true
+		Interfaz.cancelar() -- cierra la pregunta que esté abierta
 		tocado:Fire(carpeta)
 	end)
 	local params = RaycastParams.new()
@@ -411,6 +412,9 @@ function Juego.jugar(ctx: Contexto): boolean
 			while true do
 				intentos += 1
 				local k = preguntarInclina("La balanza está trabada. Si la soltamos, ¿qué pasa?")
+				if quiereSalir then
+					return false, intentos, pistas
+				end
 				trabada = false
 				sonar("Inclina")
 				task.wait(1.2)
@@ -455,6 +459,9 @@ function Juego.jugar(ctx: Contexto): boolean
 				textos,
 				COLOR
 			)
+			if quiereSalir then
+				return false, 1, pistas
+			end
 			local predijo = ops[k]
 			local necesarios = B.pasarNecesarios(r)
 			Interfaz.mensaje("Ahora pasalos: tocá un bloque para cambiarlo de plato.", COLOR, 5)
@@ -533,6 +540,9 @@ function Juego.jugar(ctx: Contexto): boolean
 							textoLado(lado)
 						)
 					)
+					if quiereSalir then
+						break
+					end
 					B.mover(r, id2, lado)
 					elegido = nil
 					sonar("Poner")
@@ -575,6 +585,9 @@ function Juego.jugar(ctx: Contexto): boolean
 			intentos += 1
 			local k =
 				Interfaz.elegir(if una then "¿Cuánto pesa UNA caja?" else "¿Cuánto pesa la caja?", textos, COLOR)
+			if quiereSalir then
+				return false, intentos, pistas
+			end
 			if ops[k] == w then
 				sonar("Bien")
 				Interfaz.mensaje(("¡Eso! La caja pesa %d."):format(w), Estilo.color.geometrico)
@@ -646,7 +659,7 @@ function Juego.jugar(ctx: Contexto): boolean
 			local titulo = if cambio == "sube" then ("¡Subís al nivel %d!"):format(escalera.nivel) else "¡Muy bien!"
 			local detalle = if nuevoSello then "¡Ganaste el sello Balanza! ⚖️" else B.TITULOS[escalera.nivel]
 			local k = Interfaz.resultado(titulo, estrellas, detalle, { "Seguir", "Volver a la plaza" })
-			if k == 2 then
+			if k ~= 1 then -- «Volver a la plaza» o Salir
 				quiereSalir = true
 			end
 		elseif cambio == "baja" then

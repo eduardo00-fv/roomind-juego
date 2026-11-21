@@ -138,6 +138,14 @@ end
 
 -- Mensaje de una línea abajo al centro. Un mensaje nuevo reemplaza al anterior.
 local mensajeActual: Frame? = nil
+
+-- Preguntas abiertas (preguntar/elegir): Interfaz.cancelar() las cierra todas y devuelven 0.
+local abiertas: { [BindableEvent]: boolean } = {}
+function Interfaz.cancelar()
+	for ev in abiertas do
+		ev:Fire(0)
+	end
+end
 function Interfaz.mensaje(texto: string, color: Color3?, segundos: number?)
 	if mensajeActual then
 		mensajeActual:Destroy()
@@ -168,7 +176,8 @@ function Interfaz.mensaje(texto: string, color: Color3?, segundos: number?)
 	end)
 end
 
--- Tarjeta al centro con una pregunta y opciones. Espera (yield) hasta que toque una; devuelve su número.
+-- Tarjeta al centro con una pregunta y opciones. Espera (yield) hasta que toque una; devuelve su número
+-- (0 si se canceló con Interfaz.cancelar, por ejemplo al tocar Salir).
 function Interfaz.preguntar(titulo: string, opciones: { string }, color: Color3?): number
 	local c = color or Estilo.color.deductivo
 	local fondo = Instance.new("Frame")
@@ -207,7 +216,9 @@ function Interfaz.preguntar(titulo: string, opciones: { string }, color: Color3?
 			elegido:Fire(i)
 		end)
 	end
+	abiertas[elegido] = true
 	local i = elegido.Event:Wait()
+	abiertas[elegido] = nil
 	fondo:Destroy()
 	elegido:Destroy()
 	return i
@@ -267,7 +278,9 @@ function Interfaz.elegir(titulo: string, opciones: { string }, color: Color3?): 
 	escala.Scale = 0.85
 	escala.Parent = panel
 	TweenService:Create(escala, TweenInfo.new(0.18, Enum.EasingStyle.Back), { Scale = 1 }):Play()
+	abiertas[elegido] = true
 	local i = elegido.Event:Wait()
+	abiertas[elegido] = nil
 	panel:Destroy()
 	elegido:Destroy()
 	return i
