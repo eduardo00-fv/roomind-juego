@@ -357,5 +357,7 @@ do
 end
 
 modelo.PrimaryPart = modelo:FindFirstChild("Origen")
+-- Siempre cargado en todos los jugadores (con StreamingEnabled, si no, desde el lobby no se encuentra).
+modelo.ModelStreamingMode = Enum.ModelStreamingMode.Persistent
 fs.writeFile("entregas/Balanza.rbxm", roblox.serializeModel({ modelo }))
 print("ok: entregas/Balanza.rbxm")

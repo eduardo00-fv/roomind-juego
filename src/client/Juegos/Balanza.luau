@@ -172,11 +172,19 @@ function Juego.jugar(ctx: Contexto): boolean
 	local m = buscarModelo(ctx)
 	local e = m and escena(m)
 	if not e then
-		Interfaz.mensaje("Falta el modelo «Balanza» en el mundo (entregas/Balanza.rbxm).", COLOR, 6)
+		Interfaz.mensaje(
+			"No encuentro la pulpería: falta el modelo «Balanza», o ponele ModelStreamingMode = Persistent.",
+			COLOR,
+			7
+		)
 		return false
 	end
 	local E = e :: Escena
 	sonidos = E.modelo:FindFirstChild("Sonidos")
+	-- Con StreamingEnabled: que cargue el piso de la pulpería antes de llevar al jugador.
+	pcall(function()
+		Players.LocalPlayer:RequestStreamAroundAsync(E.pivote.Position, 5)
+	end)
 
 	local carpeta = Instance.new("Folder")
 	carpeta.Name = "JuegoBalanza"

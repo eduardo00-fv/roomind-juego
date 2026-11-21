@@ -547,6 +547,10 @@ function Juego.jugar(ctx: Contexto): boolean
 		escenario = nil
 	end
 	sonidos = escenario and escenario:FindFirstChild("Sonidos")
+	-- Con StreamingEnabled: que cargue lo de alrededor del piso antes de llevar al jugador.
+	pcall(function()
+		Players.LocalPlayer:RequestStreamAroundAsync(ORIGEN, 5)
+	end)
 
 	local carpeta = Instance.new("Folder")
 	carpeta.Name = "JuegoLava"

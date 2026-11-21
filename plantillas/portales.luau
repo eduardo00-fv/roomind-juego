@@ -70,27 +70,21 @@ for _, j in JUEGOS do
 	luz.Parent = alfombra
 
 	for _, lado in { -1, 1 } do
-		parte(
-			{
-				Name = "Pilar",
-				Size = Vector3.new(2, 16, 2),
-				CFrame = CFrame.new(lado * 8, 8, -4),
-				Color = MADERA,
-				Material = Enum.Material.Wood,
-			},
-			m
-		)
+		parte({
+			Name = "Pilar",
+			Size = Vector3.new(2, 16, 2),
+			CFrame = CFrame.new(lado * 8, 8, -4),
+			Color = MADERA,
+			Material = Enum.Material.Wood,
+		}, m)
 	end
-	local dintel = parte(
-		{
-			Name = "Dintel",
-			Size = Vector3.new(19, 3, 2.4),
-			CFrame = CFrame.new(0, 17, -4),
-			Color = color,
-			Material = Enum.Material.SmoothPlastic,
-		},
-		m
-	)
+	local dintel = parte({
+		Name = "Dintel",
+		Size = Vector3.new(19, 3, 2.4),
+		CFrame = CFrame.new(0, 17, -4),
+		Color = color,
+		Material = Enum.Material.SmoothPlastic,
+	}, m)
 
 	local b = Instance.new("BillboardGui")
 	b.Size = roblox.UDim2.fromOffset(260, 110)
