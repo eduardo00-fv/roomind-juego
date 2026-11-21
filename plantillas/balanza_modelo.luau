@@ -68,6 +68,8 @@ parte({
 	CanQuery = false,
 })
 
+-- Terreno grande alrededor: Play Here suelta al jugador donde está la cámara y tiene que caer en algo.
+parte({ Name = "Terreno", Size = Vector3.new(260, 4, 260), CFrame = en(0, -2.6, 10), Color = Color3.fromRGB(106, 168, 79), Material = Enum.Material.Grass })
 -- Piso de la pulpería.
 parte({
 	Name = "Piso",
