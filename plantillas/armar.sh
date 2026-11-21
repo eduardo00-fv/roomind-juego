@@ -10,4 +10,5 @@ for p in shared server client; do
   rojo build "_$p.project.json" -o "entregas/$n.rbxm"; rm "_$p.project.json"
 done
 ( cd plantillas && rojo build juegos.project.json -o ../entregas/Juegos.rbxm && rojo build zonas.project.json -o ../entregas/Zonas.rbxm )
+lune run plantillas/lava_modelo.luau
 ls entregas

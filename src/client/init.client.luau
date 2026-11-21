@@ -56,14 +56,15 @@ local function llevar(destino: BasePart | CFrame)
 	end
 end
 
+-- La zona (escenario) de un juego: Workspace.Zonas.<Nombre> o, si no, Workspace.<Nombre>.
 local function zona(id: string): Instance?
-	local zonas = workspace:FindFirstChild("Zonas")
-	if not zonas then
-		return nil
-	end
-	for _, z in zonas:GetChildren() do
-		if string.lower(z.Name) == id then
-			return z
+	for _, lugar in { workspace:FindFirstChild("Zonas"), workspace } do
+		if lugar then
+			for _, z in lugar:GetChildren() do
+				if string.lower(z.Name) == id and (z:IsA("Model") or z:IsA("Folder")) then
+					return z
+				end
+			end
 		end
 	end
 	return nil

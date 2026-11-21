@@ -73,7 +73,12 @@ y `Probar` (alfombra que arranca el juego):
 | ¿Qué se esconde? | `Juegos.Escondido` | (0, 0, 600) |
 | El Colado | `Juegos.Colado` | (-600, 0, 600) |
 | El Mensajero | `Juegos.Mensajero` | (-600, 0, -600) |
-| ¡El suelo es lava! | `src/client/Juegos/Lava.luau` (Rojo) | se arma solo en (600, 40, 0) |
+| ¡El suelo es lava! | `src/client/Juegos/Lava.luau` (Rojo) | modelo `Lava` (`entregas/Lava.rbxm`), Origen en (600, 40, 0) |
+
+**La Lava es un objeto:** el modelo `Lava` (volcán, lago, mirador con alfombra `Probar` y carpeta `Sonidos`) se
+inserta en Workspace o en Workspace › Zonas, y se puede mover (no rotar). El código arma las baldosas encima de su
+parte `Origen`. Para los sonidos: en el Toolbox (pestaña Audio) buscá uno, copiá su id y pegalo en el `SoundId` de
+cada Sound de `Lava › Sonidos` (el atributo `Que` dice qué sonido va ahí). Los que queden vacíos no suenan.
 
 **Probar solo tu juego:** en el Explorer seleccioná `Workspace > Zonas > <Tuyo>`, F (la cámara va ahí),
 pestaña **Test → Play Here**, y pisá la alfombra `Probar`. Al terminar volvés al lado de la alfombra.

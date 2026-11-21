@@ -11,6 +11,7 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local SoundService = game:GetService("SoundService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -21,17 +22,29 @@ local Interfaz = require(script.Parent.Parent.Interfaz)
 
 type Estado = L.Estado
 
-export type Contexto = { reto: (datos: { [string]: any }) -> () }
+export type Contexto = { reto: (datos: { [string]: any }) -> (), zona: Instance? }
 
 local Juego = {}
 
-local ORIGEN = Vector3.new(600, 40, 0) -- lejos de la plaza; el piso crece hacia -Z
+-- El escenario es el modelo «Lava» del mundo (Workspace.Zonas.Lava o Workspace.Lava, ver plantillas/lava_modelo.luau):
+-- las baldosas se arman encima de su parte «Origen» y crecen hacia -Z. Sin modelo, se usa este punto y un mar simple.
+local ORIGEN = Vector3.new(600, 40, 0)
+local escenario: Instance? = nil
+local sonidos: Instance? = nil
 local T = 10 -- lado de una baldosa
 local COLOR = Estilo.color.lava
 
 local azar = Random.new()
 local function rnd(a: number, b: number): number
 	return azar:NextInteger(a, b)
+end
+
+-- Toca un sonido de la carpeta Sonidos del modelo (si tiene SoundId).
+local function sonar(nombre: string)
+	local s = sonidos and sonidos:FindFirstChild(nombre)
+	if s and s:IsA("Sound") and s.SoundId ~= "" then
+		SoundService:PlayLocalSound(s)
+	end
 end
 
 local function parte(props: { [string]: any }, padre: Instance): Part
@@ -114,15 +127,25 @@ local function construir(n: number, padre: Instance): Tablero
 		end
 	end
 	-- Fondo oscuro entre las juntas y el mar de lava abajo.
-	parte({ Name = "Junta", Size = Vector3.new(ancho, 1, largo), Position = Vector3.new(ORIGEN.X, ORIGEN.Y - 2.6, cz), Color = Color3.fromRGB(45, 35, 30) }, m)
-	parte({
-		Name = "MarDeLava",
-		Size = Vector3.new(ancho + 160, 1, largo + 200),
-		Position = Vector3.new(ORIGEN.X, ORIGEN.Y - 16, cz),
-		Color = COLOR,
-		Material = Enum.Material.Neon,
-		CanCollide = false,
-	}, m)
+	parte(
+		{
+			Name = "Junta",
+			Size = Vector3.new(ancho, 1, largo),
+			Position = Vector3.new(ORIGEN.X, ORIGEN.Y - 2.6, cz),
+			Color = Color3.fromRGB(45, 35, 30),
+		},
+		m
+	)
+	if not escenario then
+		parte({
+			Name = "MarDeLava",
+			Size = Vector3.new(ancho + 160, 1, largo + 200),
+			Position = Vector3.new(ORIGEN.X, ORIGEN.Y - 16, cz),
+			Color = COLOR,
+			Material = Enum.Material.Neon,
+			CanCollide = false,
+		}, m)
+	end
 	-- Orilla de salida (abajo) y meta (arriba).
 	local salida = parte({
 		Name = "Salida",
@@ -151,7 +174,15 @@ local function construir(n: number, padre: Instance): Tablero
 		}, m)
 	end
 	for _, z in { ORIGEN.Z + 2 * T + 0.5, ORIGEN.Z - largo - 2 * T - 0.5 } do
-		parte({ Name = "Pared", Size = Vector3.new(ancho, 14, 1), Position = Vector3.new(ORIGEN.X, ORIGEN.Y + 6, z), Transparency = 1 }, m)
+		parte(
+			{
+				Name = "Pared",
+				Size = Vector3.new(ancho, 14, 1),
+				Position = Vector3.new(ORIGEN.X, ORIGEN.Y + 6, z),
+				Transparency = 1,
+			},
+			m
+		)
 	end
 	m.Parent = padre
 	local pie = Vector3.new(ORIGEN.X, ORIGEN.Y + 3, ORIGEN.Z + T)
@@ -262,7 +293,13 @@ end
 type ResultadoPiso = "ganado" | "cambiar" | "salir"
 
 -- Juega un piso hasta ganarlo, cambiarlo (más de 3 quemadas) o salir.
-local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: Interfaz.Barra, primera: boolean): ResultadoPiso
+local function jugarPiso(
+	tab: Tablero,
+	e: Estado,
+	salir: () -> boolean,
+	barra: Interfaz.Barra,
+	primera: boolean
+): ResultadoPiso
 	local n = tab.n
 	local carpeta = tab.modelo
 	local ocupado = false
@@ -315,12 +352,18 @@ local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: I
 		if rz then
 			palo(rz.Position + Vector3.new(0, 1, 0), tab.baldosas[i].Position + Vector3.new(0, 1, 0), carpeta)
 		end
+		sonar("Tanteo")
 		if r == "lava" then
+			sonar("Lava")
 			Interfaz.mensaje("¡Lava! El resto de esa fila y de esa columna es piso.", COLOR)
 		elseif r == "piso" then
+			sonar("Piso")
 			if e.piso.conNumeros then
 				local k = L.lavasAlLado(e.piso, f, c)
-				Interfaz.mensaje(("Piso firme. Tiene %d %s al lado."):format(k, if k == 1 then "lava" else "lavas"), Estilo.color.geometrico)
+				Interfaz.mensaje(
+					("Piso firme. Tiene %d %s al lado."):format(k, if k == 1 then "lava" else "lavas"),
+					Estilo.color.geometrico
+				)
 			else
 				Interfaz.mensaje("Piso firme.", Estilo.color.geometrico, 2)
 			end
@@ -334,7 +377,10 @@ local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: I
 			if procesado then
 				return
 			end
-			if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			if
+				input.UserInputType == Enum.UserInputType.MouseButton1
+				or input.UserInputType == Enum.UserInputType.Touch
+			then
 				inicioToque[input] = input.Position
 			end
 		end)
@@ -367,14 +413,30 @@ local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: I
 		local real = L.razon(e, f, c)
 		if L.razonCorrecta(e, f, c, claves[k]) then
 			if real == "adivino" then
-				Interfaz.mensaje("¡Bien dicho! Esta vez fue suerte: tantear antes es más seguro.", Estilo.color.deductivo)
+				Interfaz.mensaje(
+					"¡Bien dicho! Esta vez fue suerte: tantear antes es más seguro.",
+					Estilo.color.deductivo
+				)
 			else
-				Interfaz.mensaje("¡Eso! Una sola lava por " .. (if claves[k] == "fila" then "fila" else "columna") .. ": las demás son piso.", Estilo.color.geometrico)
+				Interfaz.mensaje(
+					"¡Eso! Una sola lava por "
+						.. (if claves[k] == "fila" then "fila" else "columna")
+						.. ": las demás son piso.",
+					Estilo.color.geometrico
+				)
 			end
 		elseif real == "adivino" then
-			Interfaz.mensaje("Mirá bien: en esa fila y esa columna todavía no se ve ninguna lava.", Estilo.color.deductivo, 5)
+			Interfaz.mensaje(
+				"Mirá bien: en esa fila y esa columna todavía no se ve ninguna lava.",
+				Estilo.color.deductivo,
+				5
+			)
 		else
-			Interfaz.mensaje("Fijate: la lava que ya encontraste está en la misma " .. real .. ".", Estilo.color.deductivo, 5)
+			Interfaz.mensaje(
+				"Fijate: la lava que ya encontraste está en la misma " .. real .. ".",
+				Estilo.color.deductivo,
+				5
+			)
 		end
 		quieto(false)
 	end
@@ -387,6 +449,7 @@ local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: I
 		local antes = e.posicion
 		local r = L.pisar(e, f, c)
 		if r == "lavaConocida" then
+			sonar("Lava")
 			Interfaz.mensaje("¡Ojo! Esa baldosa ya sabés que es lava.", COLOR)
 			local ch = personaje()
 			if ch then
@@ -400,6 +463,7 @@ local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: I
 			end
 		elseif r == "quemada" then
 			refrescar()
+			sonar("Quemada")
 			quieto(true)
 			Interfaz.mensaje("¡Auch! Esa era lava. Queda marcada: volvé a empezar.", COLOR)
 			task.wait(0.9)
@@ -408,9 +472,14 @@ local function jugarPiso(tab: Tablero, e: Estado, salir: () -> boolean, barra: I
 			if L.hayQueCambiar(e) then
 				resultado = "cambiar"
 			elseif e.quemadas == L.QUEMADAS_PARA_CHECKS then
-				Interfaz.mensaje("Te marqué con ✓ las baldosas que ya se sabe que son seguras.", Estilo.color.geometrico, 5)
+				Interfaz.mensaje(
+					"Te marqué con ✓ las baldosas que ya se sabe que son seguras.",
+					Estilo.color.geometrico,
+					5
+				)
 			end
 		elseif r == "meta" then
+			sonar("Ganar")
 			resultado = "ganado"
 		elseif r == "piso" and not yaSabida then
 			-- Pisó sin tantear: a veces se pregunta por qué (solo si la razón es una lava a la vista,
@@ -476,9 +545,28 @@ end
 
 -- Corre el juego hasta que el niño toca «Salir». Devuelve true si completó el módulo (ganó un piso 5×5).
 function Juego.jugar(ctx: Contexto): boolean
+	escenario = ctx.zona or workspace:FindFirstChild("Lava")
+	local origen = escenario and escenario:FindFirstChild("Origen")
+	if origen and origen:IsA("BasePart") then
+		ORIGEN = origen.Position
+	else
+		escenario = nil
+	end
+	sonidos = escenario and escenario:FindFirstChild("Sonidos")
+
 	local carpeta = Instance.new("Folder")
 	carpeta.Name = "JuegoLava"
 	carpeta.Parent = workspace
+
+	local ambiente: Sound? = nil
+	local base = sonidos and sonidos:FindFirstChild("Ambiente")
+	if base and base:IsA("Sound") and base.SoundId ~= "" then
+		local a = base:Clone()
+		a.Looped = true
+		a.Parent = carpeta
+		a:Play()
+		ambiente = a
+	end
 
 	local quiereSalir = false
 	local barra = Interfaz.barra("🌋 ¡El suelo es lava!", COLOR)
@@ -566,11 +654,25 @@ function Juego.jugar(ctx: Contexto): boolean
 		if nuevoSello then
 			detalle ..= "\n¡Ganaste el sello Volcán! 🌋"
 		end
-		local k = Interfaz.resultado(("¡Cruzaste el piso %d×%d!"):format(nivel.n, nivel.n), estrellas, detalle, { "Otro piso", "Volver a la plaza" })
+		task.spawn(function()
+			for _ = 1, estrellas do
+				task.wait(0.35)
+				sonar("Estrella")
+			end
+		end)
+		local k = Interfaz.resultado(
+			("¡Cruzaste el piso %d×%d!"):format(nivel.n, nivel.n),
+			estrellas,
+			detalle,
+			{ "Otro piso", "Volver a la plaza" }
+		)
 		if k == 2 then
 			quiereSalir = true
 		elseif cambio == "sube" then
-			Interfaz.mensaje(("¡Subís al piso %d×%d!"):format(L.NIVELES[escalera.nivel].n, L.NIVELES[escalera.nivel].n), Estilo.color.oro)
+			Interfaz.mensaje(
+				("¡Subís al piso %d×%d!"):format(L.NIVELES[escalera.nivel].n, L.NIVELES[escalera.nivel].n),
+				Estilo.color.oro
+			)
 		elseif cambio == "baja" then
 			Interfaz.mensaje("Practiquemos un piso más chico.", Estilo.color.deductivo)
 		elseif cambio == "ayuda" then
@@ -580,6 +682,9 @@ function Juego.jugar(ctx: Contexto): boolean
 	end
 
 	barra.quitar()
+	if ambiente then
+		ambiente:Stop()
+	end
 	local _, h = personaje()
 	if h then
 		h.JumpHeight = 7.2
