@@ -101,7 +101,13 @@ local function portal(carpeta: Folder, id: string, angulo: number)
 	m.Parent = carpeta
 end
 
+-- Si la plaza ya está en el mundo (armada en el editor y guardada), no se vuelve a armar: se edita a mano.
+-- Para pasarla al editor, una sola vez, en la Command Bar de Studio (sin Play):
+--   require(game.ServerScriptService.Server.Plaza).construir()
 function Plaza.construir()
+	if workspace:FindFirstChild("Plaza") then
+		return
+	end
 	local carpeta = Instance.new("Folder")
 	carpeta.Name = "Plaza"
 

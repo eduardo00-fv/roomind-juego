@@ -27,6 +27,7 @@ Estilo.portal = {
 	escondido = { color = Estilo.color.geometrico, icono = "🧩" },
 	colado = { color = Estilo.color.inductivo, icono = "💃" },
 	lava = { color = Estilo.color.lava, icono = "🌋" },
+	mensajero = { color = Estilo.color.oro, icono = "✉️" },
 }
 
 -- Orden de los portales en la plaza, de izquierda a derecha.

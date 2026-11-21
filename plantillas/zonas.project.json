@@ -1,0 +1,516 @@
+{
+ "name": "Zonas",
+ "tree": {
+  "$className": "Folder",
+  "Mandadero": {
+   "$className": "Model",
+   "Piso": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "Size": [
+      160,
+      1,
+      160
+     ],
+     "Position": [
+      -600,
+      0,
+      0
+     ],
+     "Color": [
+      0.8431372549019608,
+      0.14901960784313725,
+      0.23921568627450981
+     ],
+     "Material": "SmoothPlastic",
+     "TopSurface": "Smooth",
+     "BottomSurface": "Smooth"
+    }
+   },
+   "Inicio": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Transparency": 0.6,
+     "Size": [
+      8,
+      1,
+      8
+     ],
+     "Position": [
+      -600,
+      1,
+      40
+     ],
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "Neon"
+    }
+   },
+   "Probar": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Shape": "Cylinder",
+     "Size": [
+      1,
+      12,
+      12
+     ],
+     "CFrame": {
+      "CFrame": {
+       "position": [
+        -570,
+        1,
+        70
+       ],
+       "orientation": [
+        [
+         0,
+         -1,
+         0
+        ],
+        [
+         1,
+         0,
+         0
+        ],
+        [
+         0,
+         0,
+         1
+        ]
+       ]
+      }
+     },
+     "Color": [
+      0.8431372549019608,
+      0.14901960784313725,
+      0.23921568627450981
+     ],
+     "Material": "Neon",
+     "Tags": [
+      "Portal"
+     ]
+    },
+    "$attributes": {
+     "Modulo": "mandadero"
+    }
+   }
+  },
+  "Balanza": {
+   "$className": "Model",
+   "Piso": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "Size": [
+      160,
+      1,
+      160
+     ],
+     "Position": [
+      0,
+      0,
+      -600
+     ],
+     "Color": [
+      0.10588235294117647,
+      0.4235294117647059,
+      0.6588235294117647
+     ],
+     "Material": "SmoothPlastic",
+     "TopSurface": "Smooth",
+     "BottomSurface": "Smooth"
+    }
+   },
+   "Inicio": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Transparency": 0.6,
+     "Size": [
+      8,
+      1,
+      8
+     ],
+     "Position": [
+      0,
+      1,
+      -560
+     ],
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "Neon"
+    }
+   },
+   "Probar": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Shape": "Cylinder",
+     "Size": [
+      1,
+      12,
+      12
+     ],
+     "CFrame": {
+      "CFrame": {
+       "position": [
+        30,
+        1,
+        -530
+       ],
+       "orientation": [
+        [
+         0,
+         -1,
+         0
+        ],
+        [
+         1,
+         0,
+         0
+        ],
+        [
+         0,
+         0,
+         1
+        ]
+       ]
+      }
+     },
+     "Color": [
+      0.10588235294117647,
+      0.4235294117647059,
+      0.6588235294117647
+     ],
+     "Material": "Neon",
+     "Tags": [
+      "Portal"
+     ]
+    },
+    "$attributes": {
+     "Modulo": "balanza"
+    }
+   }
+  },
+  "Escondido": {
+   "$className": "Model",
+   "Piso": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "Size": [
+      160,
+      1,
+      160
+     ],
+     "Position": [
+      0,
+      0,
+      600
+     ],
+     "Color": [
+      0.1803921568627451,
+      0.6196078431372549,
+      0.30980392156862746
+     ],
+     "Material": "SmoothPlastic",
+     "TopSurface": "Smooth",
+     "BottomSurface": "Smooth"
+    }
+   },
+   "Inicio": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Transparency": 0.6,
+     "Size": [
+      8,
+      1,
+      8
+     ],
+     "Position": [
+      0,
+      1,
+      640
+     ],
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "Neon"
+    }
+   },
+   "Probar": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Shape": "Cylinder",
+     "Size": [
+      1,
+      12,
+      12
+     ],
+     "CFrame": {
+      "CFrame": {
+       "position": [
+        30,
+        1,
+        670
+       ],
+       "orientation": [
+        [
+         0,
+         -1,
+         0
+        ],
+        [
+         1,
+         0,
+         0
+        ],
+        [
+         0,
+         0,
+         1
+        ]
+       ]
+      }
+     },
+     "Color": [
+      0.1803921568627451,
+      0.6196078431372549,
+      0.30980392156862746
+     ],
+     "Material": "Neon",
+     "Tags": [
+      "Portal"
+     ]
+    },
+    "$attributes": {
+     "Modulo": "escondido"
+    }
+   }
+  },
+  "Colado": {
+   "$className": "Model",
+   "Piso": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "Size": [
+      160,
+      1,
+      160
+     ],
+     "Position": [
+      -600,
+      0,
+      600
+     ],
+     "Color": [
+      0.9490196078431372,
+      0.7176470588235294,
+      0.0196078431372549
+     ],
+     "Material": "SmoothPlastic",
+     "TopSurface": "Smooth",
+     "BottomSurface": "Smooth"
+    }
+   },
+   "Inicio": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Transparency": 0.6,
+     "Size": [
+      8,
+      1,
+      8
+     ],
+     "Position": [
+      -600,
+      1,
+      640
+     ],
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "Neon"
+    }
+   },
+   "Probar": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Shape": "Cylinder",
+     "Size": [
+      1,
+      12,
+      12
+     ],
+     "CFrame": {
+      "CFrame": {
+       "position": [
+        -570,
+        1,
+        670
+       ],
+       "orientation": [
+        [
+         0,
+         -1,
+         0
+        ],
+        [
+         1,
+         0,
+         0
+        ],
+        [
+         0,
+         0,
+         1
+        ]
+       ]
+      }
+     },
+     "Color": [
+      0.9490196078431372,
+      0.7176470588235294,
+      0.0196078431372549
+     ],
+     "Material": "Neon",
+     "Tags": [
+      "Portal"
+     ]
+    },
+    "$attributes": {
+     "Modulo": "colado"
+    }
+   }
+  },
+  "Mensajero": {
+   "$className": "Model",
+   "Piso": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "Size": [
+      160,
+      1,
+      160
+     ],
+     "Position": [
+      -600,
+      0,
+      -600
+     ],
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "SmoothPlastic",
+     "TopSurface": "Smooth",
+     "BottomSurface": "Smooth"
+    }
+   },
+   "Inicio": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Transparency": 0.6,
+     "Size": [
+      8,
+      1,
+      8
+     ],
+     "Position": [
+      -600,
+      1,
+      -560
+     ],
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "Neon"
+    }
+   },
+   "Probar": {
+    "$className": "Part",
+    "$properties": {
+     "Anchored": true,
+     "CanCollide": false,
+     "Shape": "Cylinder",
+     "Size": [
+      1,
+      12,
+      12
+     ],
+     "CFrame": {
+      "CFrame": {
+       "position": [
+        -570,
+        1,
+        -530
+       ],
+       "orientation": [
+        [
+         0,
+         -1,
+         0
+        ],
+        [
+         1,
+         0,
+         0
+        ],
+        [
+         0,
+         0,
+         1
+        ]
+       ]
+      }
+     },
+     "Color": [
+      0.788235294117647,
+      0.6352941176470588,
+      0.15294117647058825
+     ],
+     "Material": "Neon",
+     "Tags": [
+      "Portal"
+     ]
+    },
+    "$attributes": {
+     "Modulo": "mensajero"
+    }
+   }
+  }
+ }
+}

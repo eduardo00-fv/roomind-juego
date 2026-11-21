@@ -13,7 +13,24 @@ lleva a un minijuego. El diseño de cada uno (reglas, niveles, pistas, base en l
 | ¡El suelo es lava! | `lava` | **listo** (usalo de ejemplo) |
 | El Mensajero (extra) | `mensajero` | por hacer |
 
-## Arrancar (una vez)
+Para los juegos del equipo **no hace falta instalar nada más que Studio**: se trabaja en el mundo compartido
+(ver «Cómo trabajamos en equipo»). Lo de abajo es solo para quien corre Rojo.
+
+## Dónde va el código con Rojo
+
+```
+src/shared/Modulos.luau        catálogo de los 6 juegos (ids y habilidades): no cambiar ids sin avisar
+src/shared/Estilo.luau         colores y letras comunes
+src/shared/Logica/<Juego>.luau regla pura de un juego, sin APIs de Roblox (se prueba con Lune en pruebas/)
+src/client/Juegos/<Juego>.luau juegos hechos con Rojo (hoy la Lava): exporta jugar(ctx) -> completo
+src/client/Interfaz.luau       mensajes, telón, preguntas, resultado
+src/client/init.client.luau    carga los juegos (de aquí y de ReplicatedStorage.Juegos) y conecta los portales
+src/server/Plaza.luau          arma la plaza si no está en el mundo
+src/server/Reporte.luau        manda cada partida a la web de papás
+plantillas/                    plantillas de juegos y zonas; plantillas/armar.sh genera entregas/*.rbxm
+```
+
+## Arrancar con Rojo (una vez)
 
 1. Instalá [Roblox Studio](https://create.roblox.com/) y [Git](https://git-scm.com/).
 2. Instalá [Rokit](https://github.com/rojo-rbx/rokit) (trae Rojo y las demás herramientas con la versión exacta del proyecto):
@@ -27,46 +44,42 @@ lleva a un minijuego. El diseño de cada uno (reglas, niveles, pistas, base en l
    ```
 4. Instalá el plugin de Rojo en Studio: `rojo plugin install` (o desde el Creator Store, «Rojo»).
 
-## Trabajar
+## Cómo trabajamos en equipo (Team Create)
 
-```bash
-rojo serve
-```
+Todos están en el mismo mundo de Studio. **Rojo lo corre una sola persona** (la del lobby) con
+`rojo serve codigo.project.json`. Rojo reescribe solo `ReplicatedStorage.Shared`, `ServerScriptService.Server` y
+`StarterPlayerScripts.Client`: **lo que se haga a mano ahí dentro se borra**. Todo lo demás es del equipo y Rojo no lo toca.
 
-En Studio: abrí un lugar vacío (Baseplate), pestaña **Plugins → Rojo → Connect**. Lo que guardés en `src/`
-aparece solo en Studio. **El código se edita en los archivos, no en Studio** (lo que cambiés en Studio dentro
-de los scripts se pierde). Si armás modelos o piezas a mano en Studio, guardalos como `.rbxm` dentro de `src/`.
+| Quién | Dónde trabaja | Cómo |
+|---|---|---|
+| Lobby | `Workspace.Plaza` (piezas) + `src/` (código, con Rojo) | Studio + editor |
+| Cada juego | `ReplicatedStorage.Juegos.<Nombre>` (su código) + `Workspace.Zonas.<Nombre>` (su mapa) | Solo Studio |
 
-Para probar: **Play** en Studio, caminá hasta el portal de tu juego.
+**Una vez (lo hace la persona del lobby):**
+1. Con Rojo conectado, en la Command Bar de Studio (sin Play):
+   `require(game.ServerScriptService.Server.Plaza).construir()` → la plaza queda como piezas que se ven y se editan.
+2. Insert from File: `entregas/Juegos.rbxm` en ReplicatedStorage y `entregas/Zonas.rbxm` en Workspace
+   (se generan con `plantillas/armar.sh`).
 
-## Dónde va cada cosa
+**Cada juego tiene su zona** de 160×160, lejos de la plaza, con `Inicio` (donde aparece el jugador al entrar)
+y `Probar` (alfombra que arranca el juego):
 
-```
-src/
-  shared/Modulos.luau        catálogo de los 6 juegos (ids y habilidades) — no cambiar ids sin avisar
-  shared/Estilo.luau         colores y fuentes comunes
-  shared/Logica/<Juego>.luau la REGLA del juego, sin APIs de Roblox (se prueba fuera de Studio)
-  client/Juegos/<Juego>.luau lo que se ve y se toca: exporta jugar(ctx) -> completo
-  client/Interfaz.luau       mensajes, telón, botones comunes
-  client/init.client.luau    conecta los portales con los juegos
-  server/Plaza.luau          la plaza y los portales
-  server/Reporte.luau        manda el resultado de cada partida a la web de papás
-pruebas/                     pruebas de la lógica (Lune)
-```
+| Juego | Módulo | Zona (centro) |
+|---|---|---|
+| El Mandadero | `Juegos.Mandadero` | (-600, 0, 0) |
+| La Balanza | `Juegos.Balanza` | (0, 0, -600) |
+| ¿Qué se esconde? | `Juegos.Escondido` | (0, 0, 600) |
+| El Colado | `Juegos.Colado` | (-600, 0, 600) |
+| El Mensajero | `Juegos.Mensajero` | (-600, 0, -600) |
+| ¡El suelo es lava! | `src/client/Juegos/Lava.luau` (Rojo) | se arma solo en (600, 40, 0) |
 
-### Agregar tu juego (ejemplo: La Balanza)
+**Probar solo tu juego:** en el Explorer seleccioná `Workspace > Zonas > <Tuyo>`, F (la cámara va ahí),
+pestaña **Test → Play Here**, y pisá la alfombra `Probar`. Al terminar volvés al lado de la alfombra.
+Cada plantilla explica arriba qué trae `ctx` (mensajes, preguntas, resultado, `ctx.reto(...)`); el ejemplo
+completo es `src/client/Juegos/Lava.luau`.
 
-1. `src/shared/Logica/Balanza.luau`: la regla pura (estado, jugadas, ¿ganó?). Sin `game:GetService`.
-2. `pruebas/balanza.luau`: pruebas de esa lógica (mirá `pruebas/lava.luau`).
-3. `src/client/Juegos/Balanza.luau`: exporta `jugar(ctx)`, que corre el juego y devuelve `true` si lo completó.
-   Por cada reto resuelto llamá:
-   ```lua
-   ctx.reto({ reto = "balanza-1", habilidad = "deductivo", aciertos = 1, intentos = 2, pistas = 0, segundos = 35 })
-   ```
-   `habilidad` es una de: `memoria`, `inductivo`, `deductivo`, `geometrico`.
-4. En `src/client/init.client.luau`, sumalo a la tabla `Juegos`: `balanza = require(script.Juegos.Balanza),`
-
-Cada juego construye su mundo lejos de la plaza (Lava usa `x = 600`); elegí otra zona para no chocar.
+**Para no pisarse:** cada quien edita solo su módulo y su zona. Construí con piezas en tu zona desde el editor
+(se ve sin dar Play) y usá el código para lo que se mueve o cambia.
 
 ## Revisar antes de subir
 
