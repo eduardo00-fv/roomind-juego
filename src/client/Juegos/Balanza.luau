@@ -23,7 +23,12 @@ local Interfaz = require(script.Parent.Parent.Interfaz)
 type Reto = B.Reto
 type Lado = B.Lado
 
-export type Contexto = { reto: (datos: { [string]: any }) -> (), zona: Instance? }
+export type Contexto = {
+	reto: (datos: { [string]: any }) -> (),
+	zona: Instance?,
+	nivelInicial: number?,
+	nivel: ((n: number, niveles: number) -> ())?,
+}
 
 local Juego = {}
 
@@ -433,7 +438,13 @@ function Juego.jugar(ctx: Contexto): boolean
 	}
 
 	-- Un reto -----------------------------------------------------------------------------------------
-	local escalera = Escalera.nueva(B.NIVELES)
+	local escalera = Escalera.nueva(B.NIVELES, math.clamp(ctx.nivelInicial or 1, 1, B.NIVELES))
+	local function avisarNivel()
+		if ctx.nivel then
+			ctx.nivel(escalera.nivel, B.NIVELES)
+		end
+	end
+	avisarNivel()
 	local completo = false
 	local ayudaProxima = false
 
@@ -702,6 +713,7 @@ function Juego.jugar(ctx: Contexto): boolean
 			segundos = math.floor(os.clock() - t0),
 		})
 		local cambio = Escalera.registrar(escalera, acierto)
+		avisarNivel()
 		local nuevoSello = false
 		if nivel == B.NIVELES and acierto and not completo then
 			completo = true

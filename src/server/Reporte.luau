@@ -33,7 +33,7 @@ export type Reto = {
 	segundos: number,
 }
 
-type Partida = { modulo: string, inicio: number, retos: { Reto } }
+type Partida = { modulo: string, inicio: number, retos: { Reto }, nivel: number?, niveles: number? }
 
 local Reporte = {}
 local partidas: { [Player]: Partida } = {}
@@ -90,6 +90,15 @@ function Reporte.reto(jugador: Player, r: Reto)
 	})
 end
 
+-- Nivel actual del niño en el juego (de 1 a `niveles`); va en el reporte para que el papá lo vea.
+function Reporte.nivel(jugador: Player, nivel: number, niveles: number)
+	local p = partidas[jugador]
+	if p then
+		p.nivel = nivel
+		p.niveles = niveles
+	end
+end
+
 function Reporte.terminar(jugador: Player, completo: boolean)
 	local p = partidas[jugador]
 	if not p then
@@ -102,6 +111,8 @@ function Reporte.terminar(jugador: Player, completo: boolean)
 		completo = completo,
 		segundos = math.floor(os.clock() - p.inicio),
 		retos = p.retos,
+		nivel = p.nivel,
+		niveles = p.niveles,
 	}
 	task.spawn(enviar, cuerpo)
 end

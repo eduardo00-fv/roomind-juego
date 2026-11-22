@@ -110,8 +110,17 @@ local function entrar(id: string, alfombra: BasePart)
 	end
 	enJuego = true
 	partida:FireServer("empezar", id)
+	local okNivel, guardado = pcall(function()
+		return (ReplicatedStorage:WaitForChild("NivelGuardado") :: RemoteFunction):InvokeServer(id)
+	end)
 	local ctx = {
 		id = id,
+		-- Nivel en el que quedó la vez pasada (1 si es la primera vez).
+		nivelInicial = if okNivel and type(guardado) == "number" then guardado else 1,
+		-- El juego avisa su nivel cada vez que cambia (y al empezar): se guarda y va en el reporte al papá.
+		nivel = function(n: number, niveles: number)
+			partida:FireServer("nivel", { nivel = n, niveles = niveles })
+		end,
 		reto = function(datos: { [string]: any })
 			partida:FireServer("reto", datos)
 		end,

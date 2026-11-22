@@ -22,7 +22,12 @@ local Interfaz = require(script.Parent.Parent.Interfaz)
 
 type Estado = L.Estado
 
-export type Contexto = { reto: (datos: { [string]: any }) -> (), zona: Instance? }
+export type Contexto = {
+	reto: (datos: { [string]: any }) -> (),
+	zona: Instance?,
+	nivelInicial: number?,
+	nivel: ((n: number, niveles: number) -> ())?,
+}
 
 local Juego = {}
 
@@ -606,7 +611,13 @@ function Juego.jugar(ctx: Contexto): boolean
 		return quiereSalir
 	end
 
-	local escalera = Escalera.nueva(#L.NIVELES)
+	local escalera = Escalera.nueva(#L.NIVELES, math.clamp(ctx.nivelInicial or 1, 1, #L.NIVELES))
+	local function avisarNivel()
+		if ctx.nivel then
+			ctx.nivel(escalera.nivel, #L.NIVELES)
+		end
+	end
+	avisarNivel()
 	local completo = false
 	local primera = true
 	local regalo = false -- la escalera pidió ayuda: el próximo piso arranca con una lava descubierta
@@ -673,6 +684,7 @@ function Juego.jugar(ctx: Contexto): boolean
 
 		local estrellas = L.estrellas(e)
 		local cambio = Escalera.registrar(escalera, quemadas <= 1)
+		avisarNivel()
 		local nuevoSello = false
 		if nivel.n == L.NIVELES[#L.NIVELES].n and not completo then
 			completo = true
