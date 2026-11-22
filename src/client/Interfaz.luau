@@ -138,6 +138,12 @@ end
 
 -- Mensaje de una línea abajo al centro. Un mensaje nuevo reemplaza al anterior.
 local mensajeActual: Frame? = nil
+local margenAbajo = 0
+
+-- Espacio libre abajo (en píxeles) para que los mensajes no tapen los controles de un juego. 0 = normal.
+function Interfaz.margenAbajo(px: number)
+	margenAbajo = px
+end
 
 -- Preguntas abiertas (preguntar/elegir): Interfaz.cancelar() las cierra todas y devuelven 0.
 local abiertas: { [BindableEvent]: boolean } = {}
@@ -152,7 +158,7 @@ function Interfaz.mensaje(texto: string, color: Color3?, segundos: number?)
 	end
 	local marco = Instance.new("Frame")
 	marco.AnchorPoint = Vector2.new(0.5, 1)
-	marco.Position = UDim2.new(0.5, 0, 1, -24)
+	marco.Position = UDim2.new(0.5, 0, 1, -24 - margenAbajo)
 	marco.Size = UDim2.new(0.8, 0, 0, 64)
 	marco.BackgroundColor3 = Estilo.color.tarjeta
 	esquinas(marco, 16)

@@ -61,8 +61,32 @@ local function llevar(destino: BasePart | CFrame)
 	local ch = jugador.Character
 	if ch then
 		local cf = if typeof(destino) == "CFrame" then destino else (destino :: BasePart).CFrame
+		-- Con StreamingEnabled: que cargue el piso del destino antes de llegar (si no, se cae).
+		pcall(function()
+			jugador:RequestStreamAroundAsync(cf.Position, 5)
+		end)
 		ch:PivotTo(cf + Vector3.new(0, 4, 0))
 	end
+end
+
+-- Portales en pausa: después de volver de un juego, ese portal no arranca otra vez hasta que el jugador
+-- se aleje (si no, cae encima y vuelve a entrar).
+local enPausa: { [BasePart]: boolean } = {}
+local function pausar(alfombra: BasePart)
+	enPausa[alfombra] = true
+	task.spawn(function()
+		local radio = math.max(alfombra.Size.X, alfombra.Size.Y, alfombra.Size.Z) / 2 + 3
+		local limite = os.clock() + 60
+		while os.clock() < limite do
+			task.wait(0.3)
+			local ch = jugador.Character
+			local raiz = ch and ch:FindFirstChild("HumanoidRootPart") :: BasePart?
+			if raiz and (raiz.Position - alfombra.Position).Magnitude > radio then
+				break
+			end
+		end
+		enPausa[alfombra] = nil
+	end)
 end
 
 -- La zona (escenario) de un juego: Workspace.Zonas.<Nombre> o, si no, Workspace.<Nombre>.
@@ -96,7 +120,7 @@ local function destinoLobby(): BasePart?
 end
 
 local function entrar(id: string, alfombra: BasePart)
-	if enJuego then
+	if enJuego or enPausa[alfombra] then
 		return
 	end
 	local juego = Juegos[id]
@@ -151,9 +175,12 @@ local function entrar(id: string, alfombra: BasePart)
 		if lobby then
 			llevar(lobby)
 		else
-			llevar(alfombra.CFrame + Vector3.new(0, 0, 12))
+			-- Al lado del portal, fuera de su borde (los portales del equipo pueden ser grandes).
+			local radio = math.max(alfombra.Size.X, alfombra.Size.Y, alfombra.Size.Z) / 2
+			llevar(CFrame.new(alfombra.Position + Vector3.new(0, 0, radio + 6)))
 		end
 	end)
+	pausar(alfombra)
 	task.wait(1)
 	enJuego = false
 end

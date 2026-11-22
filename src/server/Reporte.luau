@@ -38,7 +38,10 @@ type Partida = { modulo: string, inicio: number, retos: { Reto }, nivel: number?
 local Reporte = {}
 local partidas: { [Player]: Partida } = {}
 
-local function enviar(cuerpo: { [string]: any })
+-- Cuántos envíos hay en curso: al cerrar el servidor (Stop en Studio) se espera a que terminen.
+local enviando = 0
+
+local function enviarYa(cuerpo: { [string]: any })
 	local url = ServerScriptService:GetAttribute("UrlServidor")
 	if type(url) ~= "string" or url == "" then
 		warn("[Reporte] Falta el atributo UrlServidor en ServerScriptService; no se envía")
@@ -66,6 +69,17 @@ local function enviar(cuerpo: { [string]: any })
 		end
 		warn(("[Reporte] intento %d falló: %s"):format(intento, ok and tostring(resp.StatusCode) or tostring(resp)))
 		task.wait(2 ^ intento)
+	end
+end
+
+local function enviar(cuerpo: { [string]: any })
+	enviando += 1
+	local ok, err = pcall(function()
+		enviarYa(cuerpo)
+	end)
+	enviando -= 1
+	if not ok then
+		warn("[Reporte] " .. tostring(err))
 	end
 end
 
@@ -119,6 +133,19 @@ end
 
 Players.PlayerRemoving:Connect(function(jugador)
 	Reporte.terminar(jugador, false)
+end)
+
+-- Al cerrar el servidor (Stop en Studio, o se apaga el servidor en Roblox): mandar lo que quede a medias y
+-- esperar a que salga, hasta 20 s. Si no, el reporte de una partida cortada se pierde.
+game:BindToClose(function()
+	for jugador in partidas do
+		Reporte.terminar(jugador, false)
+	end
+	local limite = os.clock() + 20
+	task.wait(0.2)
+	while enviando > 0 and os.clock() < limite do
+		task.wait(0.2)
+	end
 end)
 
 return Reporte

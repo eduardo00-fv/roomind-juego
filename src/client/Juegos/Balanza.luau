@@ -437,6 +437,175 @@ function Juego.jugar(ctx: Contexto): boolean
 		end),
 	}
 
+	-- Controles en pantalla (siempre andan, con mouse o con el dedo): los mismos toques que en 3D.
+	-- Cada botón dispara `tocado` con la pieza 3D que representa (el bloque o el plato).
+	local ALTO_CONTROLES = 150
+	local ui = Instance.new("ScreenGui")
+	ui.Name = "BalanzaControles"
+	ui.ResetOnSpawn = false
+	ui.DisplayOrder = 5
+	ui.Parent = Players.LocalPlayer:WaitForChild("PlayerGui")
+	local panel = Instance.new("Frame")
+	panel.AnchorPoint = Vector2.new(0.5, 1)
+	panel.Position = UDim2.new(0.5, 0, 1, -10)
+	panel.Size = UDim2.new(0.94, 0, 0, ALTO_CONTROLES)
+	panel.BackgroundColor3 = Estilo.color.tarjeta
+	panel.BackgroundTransparency = 0.08
+	panel.Visible = false
+	panel.Parent = ui
+	do
+		local c = Instance.new("UICorner")
+		c.CornerRadius = UDim.new(0, 16)
+		c.Parent = panel
+		local s = Instance.new("UIStroke")
+		s.Color = COLOR
+		s.Thickness = 3
+		s.Parent = panel
+		local lim = Instance.new("UISizeConstraint")
+		lim.MaxSize = Vector2.new(900, math.huge)
+		lim.Parent = panel
+	end
+	local filaBloques = Instance.new("Frame")
+	filaBloques.BackgroundTransparency = 1
+	filaBloques.Position = UDim2.fromOffset(12, 10)
+	filaBloques.Size = UDim2.new(1, -24, 0, 60)
+	filaBloques.Parent = panel
+	do
+		local l = Instance.new("UIListLayout")
+		l.FillDirection = Enum.FillDirection.Horizontal
+		l.HorizontalAlignment = Enum.HorizontalAlignment.Center
+		l.VerticalAlignment = Enum.VerticalAlignment.Center
+		l.Padding = UDim.new(0, 10)
+		l.SortOrder = Enum.SortOrder.LayoutOrder
+		l.Parent = filaBloques
+	end
+	local filaPlatos = Instance.new("Frame")
+	filaPlatos.BackgroundTransparency = 1
+	filaPlatos.Position = UDim2.fromOffset(12, 78)
+	filaPlatos.Size = UDim2.new(1, -24, 0, 60)
+	filaPlatos.Parent = panel
+	local botonIzq = Interfaz.boton("⬅ Plato izquierdo", Estilo.color.deductivo, filaPlatos)
+	botonIzq.Size = UDim2.new(0.5, -6, 1, 0)
+	local botonDer = Interfaz.boton("Plato derecho ➡", Estilo.color.memoria, filaPlatos)
+	botonDer.Position = UDim2.new(0.5, 6, 0, 0)
+	botonDer.Size = UDim2.new(0.5, -6, 1, 0)
+
+	local function refrescarControles()
+		for _, x in filaBloques:GetChildren() do
+			if x:IsA("GuiButton") or x:IsA("TextLabel") then
+				x:Destroy()
+			end
+		end
+		local r = reto
+		if not r or r.tipo == "predecir" or quiereSalir then
+			panel.Visible = false
+			Interfaz.margenAbajo(0)
+			return
+		end
+		panel.Visible = true
+		Interfaz.margenAbajo(ALTO_CONTROLES + 10)
+		if r.tipo == "pasar" then
+			local aviso = Instance.new("TextLabel")
+			aviso.BackgroundTransparency = 1
+			aviso.Size = UDim2.fromScale(1, 1)
+			aviso.TextScaled = true
+			aviso.Font = Estilo.letra
+			aviso.TextColor3 = Estilo.color.texto
+			aviso.Text = ("Izquierda: %d   ·   Derecha: %d   (cada bloque pesa 1)"):format(
+				B.total(r, "izq"),
+				B.total(r, "der")
+			)
+			aviso.Parent = filaBloques
+			botonIzq.Text = "⬅ Pasar uno a la izquierda"
+			botonDer.Text = "Pasar uno a la derecha ➡"
+			return
+		end
+		botonIzq.Text = "⬅ Plato izquierdo"
+		botonDer.Text = "Plato derecho ➡"
+		local hay = false
+		for _, b in r.bloques do
+			if not B.esFijo(b) then
+				hay = true
+				local sel = b.id == elegido
+				local enPlato = b.lado ~= "bandeja"
+				local color = COLORES_PESO[b.peso] or Estilo.color.secundario
+				local t = Interfaz.boton(
+					(if b.lado == "izq" then "◀ " elseif b.lado == "der" then "" else "")
+						.. tostring(b.peso)
+						.. (if b.lado == "der" then " ▶" else ""),
+					color,
+					filaBloques
+				)
+				t.LayoutOrder = b.id
+				t.Size = UDim2.fromOffset(if enPlato then 78 else 62, if sel then 60 else 52)
+				t.TextColor3 = if b.peso == 1 then Estilo.color.texto else Color3.new(1, 1, 1)
+				t.BackgroundTransparency = if enPlato then 0.45 else 0
+				if sel then
+					local s = Instance.new("UIStroke")
+					s.Color = Color3.fromRGB(255, 215, 0)
+					s.Thickness = 5
+					s.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+					s.Parent = t
+				end
+				t.Activated:Connect(function()
+					local p = partes[b.id]
+					if p then
+						tocado:Fire(p)
+					end
+				end)
+			end
+		end
+		if not hay then
+			local aviso = Instance.new("TextLabel")
+			aviso.BackgroundTransparency = 1
+			aviso.Size = UDim2.fromScale(1, 1)
+			aviso.Text = "Sin bloques sueltos"
+			aviso.Parent = filaBloques
+		end
+		-- Los botones de plato se ven apagados hasta que haya un bloque elegido.
+		local activos = elegido ~= nil
+		botonIzq.BackgroundTransparency = if activos then 0 else 0.6
+		botonDer.BackgroundTransparency = if activos then 0 else 0.6
+	end
+
+	local function botonPlato(lado: string)
+		local r = reto
+		if not r then
+			return
+		end
+		if r.tipo == "pasar" then
+			-- «Pasar uno a la derecha» = tocar un bloque del plato izquierdo (y al revés).
+			local desde = if lado == "der" then "izq" else "der"
+			for _, b in r.bloques do
+				if b.lado == desde and partes[b.id] then
+					tocado:Fire(partes[b.id])
+					return
+				end
+			end
+			Interfaz.mensaje("Ese plato ya no tiene bloques.", COLOR, 2)
+			return
+		end
+		if not elegido then
+			Interfaz.mensaje("Primero elegí un bloque de abajo.", COLOR, 2)
+			return
+		end
+		tocado:Fire(E.platos[lado])
+	end
+	botonIzq.Activated:Connect(function()
+		botonPlato("izq")
+	end)
+	botonDer.Activated:Connect(function()
+		botonPlato("der")
+	end)
+
+	-- Preguntas abajo: el panel de controles se esconde mientras tanto (están en el mismo lugar).
+	local function abajo(fn: () -> number): number
+		panel.Visible = false
+		local k = fn()
+		refrescarControles()
+		return k
+	end
+
 	-- Un reto -----------------------------------------------------------------------------------------
 	local escalera = Escalera.nueva(B.NIVELES, math.clamp(ctx.nivelInicial or 1, 1, B.NIVELES))
 	local function avisarNivel()
@@ -449,7 +618,9 @@ function Juego.jugar(ctx: Contexto): boolean
 	local ayudaProxima = false
 
 	local function preguntarInclina(titulo: string): number
-		return Interfaz.elegir(titulo, B.OPCIONES_INCLINA, COLOR)
+		return abajo(function()
+			return Interfaz.elegir(titulo, B.OPCIONES_INCLINA, COLOR)
+		end)
 	end
 
 	local function textoLado(lado: string): string
@@ -462,6 +633,7 @@ function Juego.jugar(ctx: Contexto): boolean
 		elegido, ayudaId = nil, nil
 		trabada = r.tipo == "predecir"
 		crearBloques()
+		refrescarControles()
 		barra.poner(("Nivel %d de %d   ·   %s"):format(r.nivel, B.NIVELES, B.TITULOS[r.nivel]))
 		local intentos, pistas, fallos = 0, 0, 0
 		local function pedirAyuda()
@@ -525,13 +697,15 @@ function Juego.jugar(ctx: Contexto): boolean
 				textos[i] = ("Pasar %d %s"):format(v, if v == 1 then "bloque" else "bloques")
 			end
 			local pesado = if B.diferencia(r) > 0 then "izq" else "der"
-			local k = Interfaz.elegir(
-				("Cada bloque pesa 1. ¿Cuántos tenés que pasar de %s al otro plato para que queden parejas?"):format(
-					textoLado(pesado)
-				),
-				textos,
-				COLOR
-			)
+			local k = abajo(function()
+				return Interfaz.elegir(
+					("Cada bloque pesa 1. ¿Cuántos tenés que pasar de %s al otro plato para que queden parejas?"):format(
+						textoLado(pesado)
+					),
+					textos,
+					COLOR
+				)
+			end)
 			if quiereSalir then
 				return false, 1, pistas
 			end
@@ -552,6 +726,7 @@ function Juego.jugar(ctx: Contexto): boolean
 						end
 					end
 				end
+				refrescarControles()
 			end
 			if quiereSalir then
 				return false, 1, pistas
@@ -582,11 +757,7 @@ function Juego.jugar(ctx: Contexto): boolean
 
 		-- «caja»: emparejar con la bandeja y decir cuánto pesa.
 		local predicciones = 0
-		Interfaz.mensaje(
-			"Emparejá la balanza: tocá un bloque de abajo y después el plato donde lo querés poner.",
-			COLOR,
-			6
-		)
+		Interfaz.mensaje("Emparejá la balanza: elegí un bloque y después el plato donde lo querés poner.", COLOR, 6)
 		while not B.parejas(r) and not quiereSalir do
 			local x = tocado.Event:Wait()
 			local id = x:GetAttribute("id")
@@ -637,12 +808,14 @@ function Juego.jugar(ctx: Contexto): boolean
 					pedirAyuda()
 				end
 			end
+			refrescarControles()
 		end
 		if quiereSalir then
 			return false, 1, pistas
 		end
 		ayudaId = nil
 		marcarAyuda()
+		panel.Visible = false
 		sonar("Pareja")
 		Interfaz.mensaje("¡Parejas! 🙌", Estilo.color.oro, 2)
 		task.wait(1.6)
@@ -656,8 +829,13 @@ function Juego.jugar(ctx: Contexto): boolean
 		local w = r.pesoCaja :: number
 		while true do
 			intentos += 1
-			local k =
-				Interfaz.elegir(if una then "¿Cuánto pesa UNA caja?" else "¿Cuánto pesa la caja?", textos, COLOR)
+			local k = abajo(function()
+				return Interfaz.elegir(
+					if una then "¿Cuánto pesa UNA caja?" else "¿Cuánto pesa la caja?",
+					textos,
+					COLOR
+				)
+			end)
 			if quiereSalir then
 				return false, intentos, pistas
 			end
@@ -748,6 +926,8 @@ function Juego.jugar(ctx: Contexto): boolean
 		c:Disconnect()
 	end
 	tocado:Destroy()
+	ui:Destroy()
+	Interfaz.margenAbajo(0)
 	for p, cf in E.originales do
 		p.CFrame = cf
 	end
