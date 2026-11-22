@@ -15,6 +15,30 @@ local CollectionService = game:GetService("CollectionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- Sin chat: es un juego para niños de 8 a 10 años y no hace falta hablar con desconocidos para jugar.
+-- Se apagan la ventana, la barra para escribir y las burbujas. Para cortarlo también del lado del servidor,
+-- en Studio: TextChatService > CreateDefaultTextChannels = false.
+do
+	local StarterGui = game:GetService("StarterGui")
+	local TextChatService = game:GetService("TextChatService")
+	pcall(function()
+		TextChatService.ChatWindowConfiguration.Enabled = false
+		TextChatService.ChatInputBarConfiguration.Enabled = false
+		TextChatService.BubbleChatConfiguration.Enabled = false
+	end)
+	task.spawn(function()
+		-- SetCoreGuiEnabled puede fallar si el CoreGui todavía no cargó: se reintenta unos segundos.
+		for _ = 1, 10 do
+			if pcall(function()
+				StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+			end) then
+				break
+			end
+			task.wait(0.5)
+		end
+	end)
+end
+
 local Estilo = require(ReplicatedStorage.Shared.Estilo)
 local Modulos = require(ReplicatedStorage.Shared.Modulos)
 local Interfaz = require(script.Interfaz)
