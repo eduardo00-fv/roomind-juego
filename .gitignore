@@ -8,3 +8,6 @@
 sourcemap.json
 /*.rbxl
 /entregas/
+
+# Proyecto de Rojo con datos de esta compu (dirección del servidor): no va al repo público
+*.local.project.json
