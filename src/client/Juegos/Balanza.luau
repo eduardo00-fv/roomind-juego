@@ -303,11 +303,22 @@ function Juego.jugar(ctx: Contexto): boolean
 		velocidad += fuerza
 	end
 
-	-- Dónde va cada bloque: en filas de 3 sobre su plato, o en fila sobre la bandeja.
+	-- Dónde va cada bloque: en fila sobre la bandeja; en un plato sin cajas, en filas de 5 de frente a la cámara
+	-- (una encima de otra, como un marco de diez: se cuentan sin que uno tape a otro); con cajas, en filas de 3.
+	local POR_FILA = 5
+	local PASO_FILA = LADO_BLOQUE + 0.15
 	local function destinos(donde: { [string]: CFrame }): { [number]: CFrame }
 		local r = reto :: Reto
 		local res = {}
 		local cuenta = { izq = 0, der = 0, bandeja = 0 }
+		local total = { izq = 0, der = 0, bandeja = 0 }
+		local conCaja = { izq = false, der = false, bandeja = false }
+		for _, b in r.bloques do
+			total[b.lado] += 1
+			if b.misterio then
+				conCaja[b.lado] = true
+			end
+		end
 		for _, b in r.bloques do
 			local k = cuenta[b.lado]
 			cuenta[b.lado] = k + 1
@@ -318,6 +329,14 @@ function Juego.jugar(ctx: Contexto): boolean
 				local x = -ancho / 2 + 2 + k * paso
 				res[b.id] = E.bandeja.CFrame
 					* CFrame.new(x, E.bandeja.Size.Y / 2 + alto / 2 + (if b.id == elegido then 2.5 else 0), 0)
+			elseif not conCaja[b.lado] then
+				local capa = k // POR_FILA
+				local i = k % POR_FILA
+				-- La fila de arriba (incompleta) va centrada sobre la de abajo.
+				local enFila = math.min(POR_FILA, total[b.lado] - capa * POR_FILA)
+				local x = (i - (enFila - 1) / 2) * PASO_FILA
+				local grosor = E.platos[b.lado].Size.X / 2
+				res[b.id] = donde[b.lado] * CFrame.new(x, grosor + alto / 2 + capa * (LADO_BLOQUE + 0.05), 0)
 			else
 				local cf = donde[b.lado]
 				local capa = k // 9
