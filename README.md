@@ -6,11 +6,11 @@ lleva a un minijuego. El diseño de cada uno (reglas, niveles, pistas, base en l
 
 | Juego | Id | Estado |
 |---|---|---|
-| El Mandadero | `mandadero` | por hacer |
+| El Mandadero | `mandadero` | **jugable** (en el mundo de Studio: `ReplicatedStorage.Juegos.Mandadero`) |
 | La Balanza | `balanza` | **jugable** (modelo `entregas/Balanza.rbxm`) |
-| ¿Qué se esconde? | `escondido` | por hacer |
-| El Colado | `colado` | por hacer |
-| ¡El suelo es lava! | `lava` | **listo** (usalo de ejemplo) |
+| ¿Qué se esconde? | `escondido` | **jugable**, niveles 1 y 2 (`src/client/Juegos/Escondido.luau`) |
+| El Colado | `colado` | **jugable** (en el mundo de Studio: `ReplicatedStorage.Juegos.Colado`) |
+| ¡El suelo es lava! | `lava` | **listo**: en el mundo corre la v3 del equipo (`ServerScriptService.Script`, 15 niveles), que reporta con `Server.Reporte`; `src/client/Juegos/Lava.luau` queda de ejemplo |
 | El Mensajero (extra) | `mensajero` | por hacer |
 
 Para los juegos del equipo **no hace falta instalar nada más que Studio**: se trabaja en el mundo compartido
@@ -70,7 +70,7 @@ y `Probar` (alfombra que arranca el juego):
 |---|---|---|
 | El Mandadero | `Juegos.Mandadero` | (-600, 0, 0) |
 | La Balanza | `src/client/Juegos/Balanza.luau` (Rojo) | modelo `Balanza` (pulpería), Origen en (0, 40, -800) |
-| ¿Qué se esconde? | `Juegos.Escondido` | (0, 0, 600) |
+| ¿Qué se esconde? | `src/client/Juegos/Escondido.luau` (Rojo) | en pantalla (2D); portal `Portal_Escondido` en la plaza |
 | El Colado | `Juegos.Colado` | (-600, 0, 600) |
 | El Mensajero | `Juegos.Mensajero` | (-600, 0, -600) |
 | ¡El suelo es lava! | `src/client/Juegos/Lava.luau` (Rojo) | modelo `Lava` (`entregas/Lava.rbxm`), Origen en (600, 40, 0) |
