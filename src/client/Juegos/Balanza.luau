@@ -264,7 +264,13 @@ function Juego.jugar(ctx: Contexto): boolean
 		cam.CFrame = E.pivote.CFrame * CAMARA
 	end)
 	if raiz then
+		-- Quieto y DERECHO: si se ancla mientras se cae al llegar, queda acostado todo el juego.
 		raiz.Anchored = true
+		raiz.CFrame = E.pivote.CFrame * JUGADOR
+		local _, h = personaje()
+		if h then
+			h:ChangeState(Enum.HumanoidStateType.Running)
+		end
 	end
 
 	local ambiente: Sound? = nil
@@ -960,9 +966,18 @@ function Juego.jugar(ctx: Contexto): boolean
 	carpeta:Destroy()
 	cam.FieldOfView = camFov
 	cam.CameraType = if camTipo == Enum.CameraType.Scriptable then Enum.CameraType.Custom else camTipo
-	local _, _, rz = personaje()
+	local _, h, rz = personaje()
 	if rz then
+		-- Soltarlo derecho (solo con el giro horizontal), para que no caiga de lado.
+		local plano = rz.CFrame.LookVector * Vector3.new(1, 0, 1)
+		if plano.Magnitude < 0.01 then
+			plano = Vector3.zAxis
+		end
+		rz.CFrame = CFrame.lookAt(rz.Position, rz.Position + plano.Unit)
 		rz.Anchored = false
+		if h then
+			h:ChangeState(Enum.HumanoidStateType.GettingUp)
+		end
 	end
 	return completo
 end
